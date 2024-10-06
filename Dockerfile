@@ -1,5 +1,5 @@
 # 第一阶段：构建阶段
-FROM dockerpull.com/golang:1.23 AS builder
+FROM golang:1.23 AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -20,7 +20,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o main .
 
 # 第二阶段：运行阶段
-FROM dockerpull.com/alpine:latest
+FROM alpine:latest
 
 # 设置时区
 RUN apk add --no-cache tzdata
