@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
@@ -15,9 +16,54 @@ const (
 
 	// Env_FengToken 凤凰卫视接口请求 token 环境变量
 	Env_FengToken = "feng_token"
+
 	// fengAuthUrl 凤凰卫视直播源授权接口
 	fengAuthUrl = "https://m.fengshows.com/api/v3/hub/live/auth-url?live_qa=FHD"
+
+	// fengUpdateUrl 凤凰卫视 token 刷新接口
+	//
+	// 刷新时需要携带一个有效的 token,
+	// 并且成功刷新后会使得原有的 token 立即失效
+	fengUpdateUrl = "http://m.fengshows.com/user/oauth/update"
 )
+
+func init() {
+	autoRefreshFengToken()
+}
+
+// autoRefreshFengToken 定时自动刷新 token
+func autoRefreshFengToken() {
+	env.SetAutoRefresh(Env_FengToken, func(curVal string) (string, error) {
+		header := make(http.Header)
+		header.Set("Token", curVal)
+		resp, err := https.Request(http.MethodPost, fengUpdateUrl, header, nil)
+		if err != nil {
+			return "", fmt.Errorf("请求失败: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("错误的响应码: %d", resp.StatusCode)
+		}
+
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("读取响应体失败: %v", err)
+		}
+
+		bodyJson, err := jsons.New(string(bodyBytes))
+		if err != nil {
+			return "", fmt.Errorf("解析响应失败, err: %v, 原始响应: %s", err, string(bodyBytes))
+		}
+
+		newVal, ok := bodyJson.Attr("data").Attr("token").String()
+		if !ok {
+			return "", fmt.Errorf("解析响应失败, 获取不到新 token, 原始响应: %s", string(bodyBytes))
+		}
+
+		return newVal, nil
+	}, time.Hour*6)
+}
 
 // fengChannels 记录支持的凤凰卫视频道
 var fengChannels = map[string]string{
