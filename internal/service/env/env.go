@@ -8,6 +8,7 @@ var globalEnv = sync.Map{}
 // Set 设置环境变量
 func Set(key, value string) {
 	globalEnv.Store(key, value)
+	diskPreStoreChan <- keyPair{key: key, value: value}
 }
 
 // Get 获取环境变量
