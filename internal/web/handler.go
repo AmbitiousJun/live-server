@@ -25,6 +25,10 @@ func HandleLive(c *gin.Context) {
 		return
 	}
 
+	ua := c.Request.Header.Get("User-Agent")
+	clientIp := c.ClientIP()
+	log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
+
 	result, err := handler.Handle(resolve.HandleParams{
 		ChName: cName,
 	})
