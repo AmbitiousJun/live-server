@@ -31,6 +31,7 @@ func HandleLive(c *gin.Context) {
 
 	result, err := handler.Handle(resolve.HandleParams{
 		ChName: cName,
+		UrlEnv: c.Query("url_env"),
 	})
 	if err != nil {
 		c.String(http.StatusBadRequest, "处理失败: %v", err)

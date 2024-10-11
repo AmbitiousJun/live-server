@@ -1,7 +1,10 @@
 package resolve
 
 // allHandlers 存放所有的直播处理器
-var allHandlers = []Handler{new(fengHandler)}
+var allHandlers = []Handler{
+	new(fengHandler),
+	new(remoteM3UHandler),
+}
 
 // handlerMap 将处理器的名称作为 key 存放到 map 中, 便于快速读取
 var handlerMap map[string]Handler
@@ -16,6 +19,7 @@ func init() {
 // HandleParams 处理参数
 type HandleParams struct {
 	ChName string // 频道简称
+	UrlEnv string // 存储远程地址的环境变量名
 }
 
 // Handler 直播响应处理器
