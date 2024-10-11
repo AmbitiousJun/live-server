@@ -13,7 +13,7 @@ import (
 func Listen(port int) error {
 	r := gin.Default()
 	r.GET("/handler/:handler/ch/:channel", HandleLive)
-	r.GET("/env/update", env.StoreEnv)
+	r.GET("/env", env.StoreEnv)
 	log.Printf(colors.ToBlue("在端口【%d】上开启 http 服务..."), port)
 	return r.Run(fmt.Sprintf(":%d", port))
 }
