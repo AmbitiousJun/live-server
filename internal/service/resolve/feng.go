@@ -78,17 +78,17 @@ func (fengHandler) Name() string {
 	return "feng"
 }
 
-func (fengHandler) Handle(params HandleParams) (string, error) {
+func (fengHandler) Handle(params HandleParams) (HandleResult, error) {
 	// 1 检查 token 变量
 	token, ok := env.Get(Env_FengToken)
 	if !ok {
-		return "", fmt.Errorf("请先设置环境变量: %s", Env_FengToken)
+		return HandleResult{}, fmt.Errorf("请先设置环境变量: %s", Env_FengToken)
 	}
 
 	// 2 判断频道是否支持
 	liveId, ok := fengChannels[params.ChName]
 	if !ok {
-		return "", fmt.Errorf("不支持的频道: %s", params.ChName)
+		return HandleResult{}, fmt.Errorf("不支持的频道: %s", params.ChName)
 	}
 
 	// 3 请求授权接口
@@ -100,27 +100,27 @@ func (fengHandler) Handle(params HandleParams) (string, error) {
 	header.Set("Token", token)
 	resp, err := https.Request(http.MethodGet, u.String(), header, nil)
 	if err != nil {
-		return "", fmt.Errorf("请求失败: %s", err)
+		return HandleResult{}, fmt.Errorf("请求失败: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("授权失败, 响应码: %d", resp.StatusCode)
+		return HandleResult{}, fmt.Errorf("授权失败, 响应码: %d", resp.StatusCode)
 	}
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("读取响应异常: %v", err)
+		return HandleResult{}, fmt.Errorf("读取响应异常: %v", err)
 	}
 	resJson, err := jsons.New(string(bytes))
 	if err != nil {
-		return "", fmt.Errorf("JSON 转换失败: %v", err)
+		return HandleResult{}, fmt.Errorf("JSON 转换失败: %v", err)
 	}
 
 	liveUrl, ok := resJson.Attr("data").Attr("live_url").String()
 	if !ok {
-		return "", fmt.Errorf("获取直播地址失败, 原始响应: %s", resJson)
+		return HandleResult{}, fmt.Errorf("获取直播地址失败, 原始响应: %s", resJson)
 	}
 
-	return liveUrl, nil
+	return HandleResult{Type: ResultRedirect, Url: liveUrl}, nil
 }

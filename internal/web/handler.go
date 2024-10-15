@@ -37,6 +37,27 @@ func HandleLive(c *gin.Context) {
 		c.String(http.StatusBadRequest, "处理失败: %v", err)
 		return
 	}
-	log.Printf(colors.ToGreen("重定向到: %s"), result)
-	c.Redirect(http.StatusTemporaryRedirect, result)
+
+	if result.Type == resolve.ResultRedirect {
+		log.Printf(colors.ToGreen("重定向到: %s"), result.Url)
+		c.Redirect(http.StatusTemporaryRedirect, result.Url)
+		return
+	}
+
+	if result.Type == resolve.ResultProxy {
+		log.Println(colors.ToGreen("请求被代理"))
+		c.Status(result.Code)
+		if result.Header != nil {
+			for key, values := range result.Header {
+				for _, value := range values {
+					c.Writer.Header().Add(key, value)
+				}
+			}
+		}
+		if result.Body != nil {
+			c.Writer.Write(result.Body)
+			c.Writer.Flush()
+		}
+		return
+	}
 }
