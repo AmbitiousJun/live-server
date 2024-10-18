@@ -7,6 +7,7 @@ var allHandlers = []Handler{
 	new(fengHandler),
 	new(remoteM3UHandler),
 	new(thirdGdtvHandler),
+	new(sttvHandler),
 }
 
 // handlerMap 将处理器的名称作为 key 存放到 map 中, 便于快速读取
