@@ -70,6 +70,8 @@ func (sh *sttvHandler) Handle(params HandleParams) (HandleResult, error) {
 		return HandleResult{}, fmt.Errorf("获取直播源失败, 原始响应: %s", string(bodyBytes))
 	}
 
+	// 将 m3u 地址缓存到环境变量中
+	env.Set(sttvTmpM3uPrefix+"_"+params.ChName, liveUrl)
 	return HandleResult{
 		Type: ResultRedirect,
 		Url:  liveUrl,
