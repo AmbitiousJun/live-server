@@ -3,12 +3,30 @@ package web
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
 	"github.com/gin-gonic/gin"
 )
+
+// HandleAddBlackIp 处理黑名单添加事件
+func HandleAddBlackIp(c *gin.Context) {
+	ip := c.Query("ip")
+	if ip = strings.TrimSpace(ip); ip == "" {
+		c.String(http.StatusBadRequest, "参数不足")
+		return
+	}
+
+	if err := AddBlackIp(ip); err != nil {
+		log.Printf("添加黑名单失败: %v", err)
+		c.String(http.StatusInternalServerError, "添加黑名单失败")
+		return
+	}
+
+	c.String(http.StatusOK, "添加成功")
+}
 
 // HandleLive 调用处理器处理直播请求
 func HandleLive(c *gin.Context) {
@@ -28,6 +46,11 @@ func HandleLive(c *gin.Context) {
 	ua := c.Request.Header.Get("User-Agent")
 	clientIp := c.ClientIP()
 	log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
+
+	if IsBlackIp(clientIp) {
+		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！")
+		return
+	}
 
 	result, err := handler.Handle(resolve.HandleParams{
 		ChName: cName,

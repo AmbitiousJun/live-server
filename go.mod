@@ -2,7 +2,10 @@ module github.com/AmbitiousJun/live-server
 
 go 1.23.2
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/gin-gonic/gin v1.10.0
+	github.com/toniphan21/go-bf v1.0.0
+)
 
 require (
 	github.com/bytedance/sonic v1.12.3 // indirect
