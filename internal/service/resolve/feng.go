@@ -69,6 +69,7 @@ func autoRefreshFengToken() {
 var fengChannels = map[string]string{
 	"fhzx": "7c96b084-60e1-40a9-89c5-682b994fb680", // 凤凰资讯
 	"fhzw": "f7f48462-9b13-485b-8101-7b54716411ec", // 凤凰中文
+	"fhxg": "15e02d92-1698-416c-af2f-3e9a872b4d78", // 凤凰香港
 }
 
 // fengHandler 凤凰卫视电视直播处理器
