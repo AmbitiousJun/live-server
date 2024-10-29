@@ -8,6 +8,10 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
+func init() {
+	registerHandler(new(thirdGdtvHandler))
+}
+
 // thirdGdtvHandler 第三方广东新闻处理器
 type thirdGdtvHandler struct{}
 

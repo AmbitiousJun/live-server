@@ -10,6 +10,10 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
+func init() {
+	registerHandler(new(remoteM3UHandler))
+}
+
 // remoteM3UHandler 远程 m3u8 直播源处理器
 type remoteM3UHandler struct{}
 

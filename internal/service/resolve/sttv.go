@@ -23,6 +23,10 @@ var sttvChannels = map[string]string{
 	"st1": "1169873", // 汕头 1 台
 }
 
+func init() {
+	registerHandler(new(sttvHandler))
+}
+
 // sttvHandler 汕头橄榄台处理器
 type sttvHandler struct{}
 

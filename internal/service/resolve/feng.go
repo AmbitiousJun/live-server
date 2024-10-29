@@ -29,6 +29,7 @@ const (
 
 func init() {
 	autoRefreshFengToken()
+	registerHandler(new(fengHandler))
 }
 
 // autoRefreshFengToken 定时自动刷新 token

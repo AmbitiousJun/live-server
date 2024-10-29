@@ -1,24 +1,15 @@
 package resolve
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+	"sync"
 
-// allHandlers 存放所有的直播处理器
-var allHandlers = []Handler{
-	new(fengHandler),
-	new(remoteM3UHandler),
-	new(thirdGdtvHandler),
-	new(sttvHandler),
-}
+	"github.com/AmbitiousJun/live-server/internal/util/colors"
+)
 
 // handlerMap 将处理器的名称作为 key 存放到 map 中, 便于快速读取
-var handlerMap map[string]Handler
-
-func init() {
-	handlerMap = make(map[string]Handler)
-	for _, handler := range allHandlers {
-		handlerMap[handler.Name()] = handler
-	}
-}
+var handlerMap = sync.Map{}
 
 // HandleParams 处理参数
 type HandleParams struct {
@@ -53,11 +44,26 @@ type Handler interface {
 	Name() string
 }
 
+// registerHandler 注册处理器到内存中
+func registerHandler(handler Handler) {
+	if handler == nil {
+		return
+	}
+	handlerMap.Store(handler.Name(), handler)
+	log.Printf(colors.ToBlue("处理器 %s 初始化完成"), handler.Name())
+}
+
 // GetHandler 根据处理器名称获取处理器
 func GetHandler(name string) (Handler, bool) {
-	handler, ok := handlerMap[name]
+	handlerAny, ok := handlerMap.Load(name)
 	if !ok {
 		return nil, false
 	}
+
+	handler, ok := handlerAny.(Handler)
+	if !ok {
+		return nil, false
+	}
+
 	return handler, true
 }
