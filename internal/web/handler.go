@@ -57,6 +57,7 @@ func HandleLive(c *gin.Context) {
 		UrlEnv: c.Query("url_env"),
 	})
 	if err != nil {
+		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)
 		c.String(http.StatusBadRequest, "处理失败: %v", err)
 		return
 	}
