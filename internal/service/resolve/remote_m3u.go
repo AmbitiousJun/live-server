@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
-	"github.com/AmbitiousJun/live-server/internal/service/m3u8"
+	"github.com/AmbitiousJun/live-server/internal/service/subm3u"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
@@ -40,7 +40,7 @@ func (remoteM3UHandler) Handle(params HandleParams) (HandleResult, error) {
 	if err != nil {
 		return HandleResult{}, fmt.Errorf("读取远程响应失败: %v", err)
 	}
-	infos, err := m3u8.ReadContent(string(bodyBytes))
+	infos, err := subm3u.ReadContent(string(bodyBytes))
 	if err != nil {
 		return HandleResult{}, fmt.Errorf("解析远程响应失败: %v, 原始响应: %s", err, string(bodyBytes))
 	}

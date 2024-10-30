@@ -1,4 +1,4 @@
-package m3u8
+package subm3u
 
 // Info m3u 格式电视直播的电视台信息封装
 type Info struct {

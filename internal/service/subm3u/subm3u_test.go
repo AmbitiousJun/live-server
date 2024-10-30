@@ -1,10 +1,10 @@
-package m3u8_test
+package subm3u_test
 
 import (
 	"log"
 	"testing"
 
-	"github.com/AmbitiousJun/live-server/internal/service/m3u8"
+	"github.com/AmbitiousJun/live-server/internal/service/subm3u"
 )
 
 const content = `#EXTM3U
@@ -230,7 +230,7 @@ http://[2409:8087:5e00:24::1e]:6060/000000001000/5000000011000031207/1.m3u8
 https://vd2.bdstatic.com/mda-qiddtcxr5ktdh0uv/720p/h264/1726307097251597100/mda-qiddtcxr5ktdh0uv.mp4?v_from_s=bdapp-resbox-hna`
 
 func TestReadContent(t *testing.T) {
-	infos, err := m3u8.ReadContent(content)
+	infos, err := subm3u.ReadContent(content)
 	if err != nil {
 		t.Fatal(err)
 		return
