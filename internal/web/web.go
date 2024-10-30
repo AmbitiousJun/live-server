@@ -16,6 +16,8 @@ func Listen(port int) error {
 	r.HEAD("/handler/:handler/ch/:channel", HandleLive)
 	r.GET("/black_ip", HandleAddBlackIp)
 	r.GET("/env", env.StoreEnv)
-	log.Printf(colors.ToBlue("在端口【%d】上开启 http 服务..."), port)
+	r.GET("/help", HandleHelpDoc)
+	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
+	log.Println(colors.ToYellow("查看帮助文档请到浏览器访问: /help"))
 	return r.Run(fmt.Sprintf(":%d", port))
 }

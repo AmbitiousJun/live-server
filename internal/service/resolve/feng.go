@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
@@ -125,4 +126,15 @@ func (fengHandler) Handle(params HandleParams) (HandleResult, error) {
 	}
 
 	return HandleResult{Type: ResultRedirect, Url: liveUrl}, nil
+}
+
+// HelpDoc 处理器说明文档
+func (fengHandler) HelpDoc() string {
+	sb := strings.Builder{}
+	sb.WriteString("\n1. 手机安装《凤凰秀》app，登录 app 后使用抓包工具手动抓取位于请求头的 jwt 登录 token")
+	sb.WriteString("\n2. 将 token 设置到环境变量中即可正常观看, key: feng_token")
+	sb.WriteString("\n3. 设置完 token 之后就不要再去打开 app 了，否则现有 token 失效")
+	sb.WriteString("\n4. 程序每隔 6 小时自动刷新 token")
+	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
+	return sb.String()
 }
