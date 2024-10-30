@@ -2,7 +2,8 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -30,4 +31,5 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
+            ambitiousjun/go-emby2alist:${{ github.ref_name }}
             ambitiousjun/live-server:latest
