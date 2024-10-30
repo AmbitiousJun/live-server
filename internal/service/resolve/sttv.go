@@ -86,3 +86,8 @@ func (sh *sttvHandler) Handle(params HandleParams) (HandleResult, error) {
 func (sh *sttvHandler) Name() string {
 	return "sttv"
 }
+
+// HelpDoc 处理器说明文档
+func (sttvHandler) HelpDoc() string {
+	return "\n目前已失效，勿用"
+}

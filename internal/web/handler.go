@@ -85,3 +85,8 @@ func HandleLive(c *gin.Context) {
 		return
 	}
 }
+
+// HandleHelpDoc 输出帮助文档
+func HandleHelpDoc(c *gin.Context) {
+	c.String(http.StatusOK, resolve.HelpDoc())
+}
