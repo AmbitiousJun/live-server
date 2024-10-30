@@ -1,4 +1,4 @@
-package m3u8
+package subm3u
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ func ReadContent(content string) (map[string]Info, error) {
 	// 检测首行
 	if scanner.Scan() {
 		firstLine := scanner.Text()
-		if firstLine != "#EXTM3U" {
+		if !strings.HasPrefix(firstLine, "#EXTM3U") {
 			return nil, errors.New("不是标准的 m3u8 文本")
 		}
 	}
@@ -26,7 +26,15 @@ func ReadContent(content string) (map[string]Info, error) {
 			continue
 		}
 		info := readChannelInfo(firstLine)
-		if info.TvgName == "" {
+
+		mapKey := info.TvgName
+		if mapKey == "" {
+			mapKey = info.CustomName
+		}
+		if mapKey == "" {
+			mapKey = info.TvgId
+		}
+		if mapKey == "" {
 			continue
 		}
 
@@ -34,7 +42,7 @@ func ReadContent(content string) (map[string]Info, error) {
 			continue
 		}
 		info.Url = scanner.Text()
-		res[info.TvgName] = info
+		res[mapKey] = info
 	}
 
 	return res, nil
