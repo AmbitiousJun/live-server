@@ -31,7 +31,7 @@ func (fs *FileStorage) Set(index uint32) {
 	defer fs.mu.Unlock()
 
 	filePath := filepath.Join(fs.fileDir, bloomFileName)
-	file, err := os.Create(filePath)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		log.Printf(colors.ToRed("布隆过滤器无法生效, 打开本地文件失败: %s, err: %v"), filePath, err)
 		return
