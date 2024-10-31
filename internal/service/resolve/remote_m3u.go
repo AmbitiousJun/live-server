@@ -60,6 +60,6 @@ func (remoteM3UHandler) HelpDoc() string {
 	sb.WriteString("\n1. 将有效的 m3u 在线地址设置到程序的环境变量中，变量名随意，如：remote_m3u_v6")
 	sb.WriteString("\n2. 调用处理器时，传递有效的频道名称和环境变量名，即可观看")
 	sb.WriteString("\n3. 环境变量名传递方式：在调用地址后边加上 query 参数，如：:5666/handler/remote_m3u/ch/CCTV1?url_env=remote_m3u_v6")
-	sb.WriteString("\n4. 频道名传递方式：程序会按照 tvg-name, tvg-id, 后缀别名 的顺序依次读取，以首个不为空的参数作为频道名称")
+	sb.WriteString("\n4. 频道名传递方式：程序会按照 [tvg-name, 后缀别名, tvg-id] 的顺序依次读取，以首个不为空的参数作为频道名称")
 	return sb.String()
 }
