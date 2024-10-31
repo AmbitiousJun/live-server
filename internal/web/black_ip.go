@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	BloomItemNums  = 10000             // 布隆过滤器存储的元素个数
+	BloomItemNums  = 1000000           // 布隆过滤器存储的元素个数
 	BloomErrorRate = 0.001             // 布隆过滤器的容错率
 	Env_BlackIps   = "bloom_black_ips" // 存储布隆过滤器数据的环境变量值
+	BlackIpDir     = "data"            // 存储黑名单 ip 的文件路径
 )
 
 // blackIpBf 存放黑名单 ip 的布隆过滤器实例
@@ -20,7 +21,7 @@ var blackIpBf bf.BloomFilter
 func init() {
 	filter, err := bf.New(
 		bf.WithAccuracy(BloomErrorRate, BloomItemNums),
-		bf.WithStorage(&bloom.EnvStorageFactory{EnvKey: Env_BlackIps}),
+		bf.WithStorage(&bloom.FileStorageFactory{FileDir: BlackIpDir}),
 	)
 	if err != nil {
 		log.Printf("黑名单布隆过滤器初始化失败: %v", err)
