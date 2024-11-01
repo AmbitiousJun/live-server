@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
+	"github.com/AmbitiousJun/live-server/internal/service/resolve/handler"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,9 @@ func Listen(port int) error {
 	r.GET("/black_ip", HandleAddBlackIp)
 	r.GET("/env", env.StoreEnv)
 	r.GET("/help", HandleHelpDoc)
+
+	handler.Init()
+
 	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
 	log.Println(colors.ToYellow("查看帮助文档请到浏览器访问: /help"))
 	return r.Run(fmt.Sprintf(":%d", port))

@@ -51,8 +51,8 @@ type Handler interface {
 	HelpDoc() string
 }
 
-// registerHandler 注册处理器到内存中
-func registerHandler(handler Handler) {
+// RegisterHandler 注册处理器到内存中
+func RegisterHandler(handler Handler) {
 	if handler == nil {
 		return
 	}
