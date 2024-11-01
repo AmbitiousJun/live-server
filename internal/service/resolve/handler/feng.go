@@ -1,4 +1,4 @@
-package resolve
+package handler
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
+	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 )
@@ -30,7 +31,7 @@ const (
 
 func init() {
 	autoRefreshFengToken()
-	registerHandler(new(fengHandler))
+	resolve.RegisterHandler(new(fengHandler))
 }
 
 // autoRefreshFengToken 定时自动刷新 token
@@ -81,17 +82,17 @@ func (fengHandler) Name() string {
 	return "feng"
 }
 
-func (fengHandler) Handle(params HandleParams) (HandleResult, error) {
+func (fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	// 1 检查 token 变量
 	token, ok := env.Get(Env_FengToken)
 	if !ok {
-		return HandleResult{}, fmt.Errorf("请先设置环境变量: %s", Env_FengToken)
+		return resolve.HandleResult{}, fmt.Errorf("请先设置环境变量: %s", Env_FengToken)
 	}
 
 	// 2 判断频道是否支持
 	liveId, ok := fengChannels[params.ChName]
 	if !ok {
-		return HandleResult{}, fmt.Errorf("不支持的频道: %s", params.ChName)
+		return resolve.HandleResult{}, fmt.Errorf("不支持的频道: %s", params.ChName)
 	}
 
 	// 3 请求授权接口
@@ -103,29 +104,29 @@ func (fengHandler) Handle(params HandleParams) (HandleResult, error) {
 	header.Set("Token", token)
 	resp, err := https.Request(http.MethodGet, u.String(), header, nil)
 	if err != nil {
-		return HandleResult{}, fmt.Errorf("请求失败: %s", err)
+		return resolve.HandleResult{}, fmt.Errorf("请求失败: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return HandleResult{}, fmt.Errorf("授权失败, 响应码: %d", resp.StatusCode)
+		return resolve.HandleResult{}, fmt.Errorf("授权失败, 响应码: %d", resp.StatusCode)
 	}
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return HandleResult{}, fmt.Errorf("读取响应异常: %v", err)
+		return resolve.HandleResult{}, fmt.Errorf("读取响应异常: %v", err)
 	}
 	resJson, err := jsons.New(string(bytes))
 	if err != nil {
-		return HandleResult{}, fmt.Errorf("JSON 转换失败: %v", err)
+		return resolve.HandleResult{}, fmt.Errorf("JSON 转换失败: %v", err)
 	}
 
 	liveUrl, ok := resJson.Attr("data").Attr("live_url").String()
 	if !ok {
-		return HandleResult{}, fmt.Errorf("获取直播地址失败, 原始响应: %s", resJson)
+		return resolve.HandleResult{}, fmt.Errorf("获取直播地址失败, 原始响应: %s", resJson)
 	}
 
-	return HandleResult{Type: ResultRedirect, Url: liveUrl}, nil
+	return resolve.HandleResult{Type: resolve.ResultRedirect, Url: liveUrl}, nil
 }
 
 // HelpDoc 处理器说明文档
@@ -137,4 +138,10 @@ func (fengHandler) HelpDoc() string {
 	sb.WriteString("\n4. 程序每隔 6 小时自动刷新 token")
 	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
 	return sb.String()
+}
+
+// SupportProxy 是否支持 m3u 代理
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (fengHandler) SupportM3UProxy() bool {
+	return false
 }
