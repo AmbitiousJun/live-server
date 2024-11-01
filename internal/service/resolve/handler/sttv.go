@@ -92,3 +92,9 @@ func (sh *sttvHandler) Name() string {
 func (sttvHandler) HelpDoc() string {
 	return "\n目前已失效，勿用"
 }
+
+// SupportProxy 是否支持 m3u 代理
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (sttvHandler) SupportM3UProxy() bool {
+	return false
+}

@@ -2,12 +2,10 @@ package handler
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
-	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
 func init() {
@@ -19,30 +17,28 @@ type thirdGdtvHandler struct{}
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
 func (thirdGdtvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
-	// 1 使用特定 UA 请求远程
+	u := fmt.Sprintf("https://php.17186.eu.org/gdtv/web/%s.m3u8", params.ChName)
+
+	// 无需代理
+	if !params.ProxyM3U {
+		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: u}, nil
+	}
+
+	// 使用特定 UA 请求远程
 	header := make(http.Header)
 	header.Set("User-Agent", "libmpv")
-	u := fmt.Sprintf("https://php.17186.eu.org/gdtv/web/%s.m3u8", params.ChName)
-	resp, err := https.Request(http.MethodGet, u, header, nil)
+	content, err := resolve.ProxyM3U(u, header, params.ProxyTs)
 	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("请求远程失败: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return resolve.HandleResult{}, fmt.Errorf("请求远程出错, 响应码: %d", resp.StatusCode)
+		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
 	}
 
-	// 2 代理响应
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("读取远程响应失败: %v", err)
-	}
+	respHeader := make(http.Header)
+	header.Set("Content-Type", "application/vnd.apple.mpegurl")
 	return resolve.HandleResult{
 		Type:   resolve.ResultProxy,
-		Code:   resp.StatusCode,
-		Header: resp.Header,
-		Body:   bodyBytes,
+		Code:   http.StatusOK,
+		Header: respHeader,
+		Body:   []byte(content),
 	}, nil
 }
 
@@ -58,4 +54,10 @@ func (thirdGdtvHandler) HelpDoc() string {
 	sb.WriteString("\n2. 该处理器不保证可用性，只是简单地绕过 UA 限制进行代理，部分 ip 会被第三方接口屏蔽无法使用")
 	sb.WriteString("\n3. 可尝试频道：xwpd(广东新闻)、gdws(广东卫视)、gdzj(广东珠江)、gdgg(广东民生)、gdty(广东体育)、nfws(大湾区卫视)、gdgj(大湾区卫视海外版)、jjkj(经济科教)、gdzy(4k超高清)、gdse(广东少儿)、jjkt(嘉佳卡通)、nfgw(南方购物)、lnxq(岭南戏曲)、xdjy(现代教育)、ydpd(广东移动)")
 	return sb.String()
+}
+
+// SupportProxy 是否支持 m3u 代理
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (thirdGdtvHandler) SupportM3UProxy() bool {
+	return true
 }

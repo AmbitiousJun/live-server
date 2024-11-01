@@ -48,11 +48,29 @@ func (remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	}
 
 	// 获取用户请求的频道
-	if destInfo, ok := infos[params.ChName]; ok {
+	destInfo, ok := infos[params.ChName]
+	if !ok {
+		return resolve.HandleResult{}, fmt.Errorf("匹配频道名称失败: %s, 请检查远程地址是否有效", params.ChName)
+	}
+
+	// 如果无需代理, 直接重定向
+	if !params.ProxyM3U {
 		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: destInfo.Url}, nil
 	}
 
-	return resolve.HandleResult{}, fmt.Errorf("匹配频道名称失败: %s, 请检查远程地址是否有效", params.ChName)
+	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs)
+	if err != nil {
+		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
+	}
+
+	respHeader := make(http.Header)
+	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl")
+	return resolve.HandleResult{
+		Type:   resolve.ResultProxy,
+		Code:   http.StatusOK,
+		Body:   []byte(content),
+		Header: respHeader,
+	}, nil
 }
 
 // HelpDoc 处理器说明文档
@@ -63,4 +81,10 @@ func (remoteM3UHandler) HelpDoc() string {
 	sb.WriteString("\n3. 环境变量名传递方式：在调用地址后边加上 query 参数，如：:5666/handler/remote_m3u/ch/CCTV1?url_env=remote_m3u_v6")
 	sb.WriteString("\n4. 频道名传递方式：程序会按照 [tvg-name, 后缀别名, tvg-id] 的顺序依次读取，以首个不为空的参数作为频道名称")
 	return sb.String()
+}
+
+// SupportProxy 是否支持 m3u 代理
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (remoteM3UHandler) SupportM3UProxy() bool {
+	return true
 }

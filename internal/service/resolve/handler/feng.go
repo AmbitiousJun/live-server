@@ -139,3 +139,9 @@ func (fengHandler) HelpDoc() string {
 	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
 	return sb.String()
 }
+
+// SupportProxy 是否支持 m3u 代理
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (fengHandler) SupportM3UProxy() bool {
+	return false
+}

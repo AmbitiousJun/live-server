@@ -53,8 +53,10 @@ func HandleLive(c *gin.Context) {
 	}
 
 	result, err := handler.Handle(resolve.HandleParams{
-		ChName: cName,
-		UrlEnv: c.Query("url_env"),
+		ChName:   cName,
+		UrlEnv:   c.Query("url_env"),
+		ProxyM3U: c.Query("proxy_m3u") == "1",
+		ProxyTs:  c.Query("proxy_ts") == "1",
 	})
 	if err != nil {
 		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)

@@ -17,8 +17,10 @@ var handlerMapOpMutex = sync.RWMutex{}
 
 // HandleParams 处理参数
 type HandleParams struct {
-	ChName string // 频道简称
-	UrlEnv string // 存储远程地址的环境变量名
+	ChName   string // 频道简称
+	UrlEnv   string // 存储远程地址的环境变量名
+	ProxyM3U bool   // 是否代理 m3u
+	ProxyTs  bool   // 是否代理 ts
 }
 
 // ResultType 处理器的处理结果
@@ -49,6 +51,11 @@ type Handler interface {
 
 	// HelpDoc 处理器说明文档
 	HelpDoc() string
+
+	// SupportProxy 是否支持 m3u 代理
+	//
+	// 如果返回 true, 会自动在帮助文档中加入标记
+	SupportM3UProxy() bool
 }
 
 // RegisterHandler 注册处理器到内存中
@@ -91,14 +98,27 @@ func HelpDoc() string {
 	sb.WriteString("\n4. ip 黑名单(GET) => :5666/black_ip?ip={要加入黑名单的地址}")
 	sb.WriteString("\n")
 
+	// 代理参数
+	sb.WriteString("\n代理参数说明：")
+	sb.WriteString("\n1. 如果处理器支持 M3U 代理, 则可以在调用处理器时传递代理参数进行代理")
+	sb.WriteString("\n2. 代理参数 ①：proxy_m3u => 是否代理 m3u，传递 1 则开启代理，其他值无效")
+	sb.WriteString("\n3. 代理参数 ②：proxy_ts  => 是否代理 ts 切片，传递 1 则开启代理，其他值无效")
+	sb.WriteString("\n4. 开启切片代理时，会消耗服务器流量")
+	sb.WriteString("\n5. 代理功能可以正常使用的前提是服务器的网络环境是能够和直播源进行连通的")
+	sb.WriteString("\n6. 举例：/handler/third_gdtv/ch/xwpd?proxy_m3u=1")
+	sb.WriteString("\n")
+
 	// 处理器文档
 	sb.WriteString("\n处理器说明：")
 	handlerMapOpMutex.RLock()
 	defer handlerMapOpMutex.RUnlock()
 	for name, handler := range handlerMap {
-		sb.WriteString("\n=====")
+		sb.WriteString("\n\n=====")
 		sb.WriteString("\n处理器名：")
 		sb.WriteString(name)
+		if handler.SupportM3UProxy() {
+			sb.WriteString("\n【该处理器支持 M3U 代理】")
+		}
 		sb.WriteString("\n处理器说明：")
 		sb.WriteString(handler.HelpDoc())
 	}
