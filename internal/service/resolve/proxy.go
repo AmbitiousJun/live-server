@@ -18,16 +18,11 @@ import (
 // 代理成功时会返回代理后的 m3u 文本
 func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) {
 	// 请求远程
-	resp, err := https.Request(http.MethodGet, m3uLink, header, nil)
+	finalLink, resp, err := https.Request(http.MethodGet, m3uLink, header, nil, true)
 	if err != nil {
 		return "", fmt.Errorf("请求远程地址失败: %s, err: %v", m3uLink, err)
 	}
 	defer resp.Body.Close()
-
-	// 如果是重定向响应, 则递归代理
-	if https.IsRedirectCode(resp.StatusCode) {
-		return ProxyM3U(resp.Header.Get("Location"), header, proxyTs)
-	}
 
 	// 非成功响应, 有可能是被拦截
 	if !https.IsSuccessCode(resp.StatusCode) {
@@ -40,7 +35,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 	}
 
 	// 解析 m3u
-	m3uInfo, err := m3u8.ReadContent(m3u8.ExtractPrefix(m3uLink), string(bodyBytes))
+	m3uInfo, err := m3u8.ReadContent(m3u8.ExtractPrefix(finalLink), string(bodyBytes))
 	if err != nil {
 		return "", fmt.Errorf("解析 m3u 失败: %s, err: %v", m3uLink, err)
 	}
@@ -64,13 +59,20 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 func ProxyTs(c *gin.Context) {
 	remote := c.Query("remote")
 
-	resp, err := https.Request(http.MethodGet, remote, nil, nil)
+	_, resp, err := https.Request(http.MethodGet, remote, nil, nil, true)
 	if err != nil {
 		log.Printf(colors.ToRed("代理切片失败: %v"), err)
 		c.String(http.StatusInternalServerError, "代理切片失败")
 		return
 	}
 	defer resp.Body.Close()
+
+	// 非成功响应, 有可能是被拦截
+	if !https.IsSuccessCode(resp.StatusCode) {
+		log.Printf(colors.ToRed("请求远程地址失败: %d %s"), resp.StatusCode, resp.Status)
+		c.String(http.StatusInternalServerError, "代理切片失败失败")
+		return
+	}
 
 	c.Status(resp.StatusCode)
 	for key, values := range resp.Header {
