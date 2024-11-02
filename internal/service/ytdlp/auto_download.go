@@ -105,6 +105,7 @@ func autoDownloadExec() {
 		log.Printf(colors.ToRed("初始化二进制文件路径失败: %s, err: %v"), execPath, err)
 		return
 	}
+	defer execFile.Close()
 	io.Copy(execFile, resp.Body)
 
 	// 标记就绪状态
