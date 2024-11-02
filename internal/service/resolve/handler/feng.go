@@ -39,7 +39,7 @@ func autoRefreshFengToken() {
 	env.SetAutoRefresh(Env_FengToken, func(curVal string) (string, error) {
 		header := make(http.Header)
 		header.Set("Token", curVal)
-		resp, err := https.Request(http.MethodPost, fengUpdateUrl, header, nil)
+		_, resp, err := https.Request(http.MethodPost, fengUpdateUrl, header, nil, true)
 		if err != nil {
 			return "", fmt.Errorf("请求失败: %v", err)
 		}
@@ -102,7 +102,7 @@ func (fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, er
 	u.RawQuery = q.Encode()
 	header := make(http.Header)
 	header.Set("Token", token)
-	resp, err := https.Request(http.MethodGet, u.String(), header, nil)
+	_, resp, err := https.Request(http.MethodGet, u.String(), header, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求失败: %s", err)
 	}

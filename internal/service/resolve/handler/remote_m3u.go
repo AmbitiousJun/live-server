@@ -31,7 +31,7 @@ func (remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	}
 
 	// 请求远程 m3u 文本
-	resp, err := https.Request(http.MethodGet, url, nil, nil)
+	_, resp, err := https.Request(http.MethodGet, url, nil, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求远程地址失败: %v", err)
 	}

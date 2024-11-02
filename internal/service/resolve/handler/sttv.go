@@ -41,7 +41,7 @@ func (sh *sttvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult
 
 	// 拼接路径, 发起请求
 	u := strings.ReplaceAll(sttvLiveDetailUrl, "${gid}", gid)
-	resp, err := https.Request(http.MethodGet, u, nil, nil)
+	_, resp, err := https.Request(http.MethodGet, u, nil, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求失败: %v", err)
 	}

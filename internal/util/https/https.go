@@ -122,23 +122,35 @@ func CloneHeader(c *gin.Context, header http.Header) {
 }
 
 // Request 发起 http 请求获取响应
-func Request(method, url string, header http.Header, body io.ReadCloser) (*http.Response, error) {
+//
+// 如果一个请求有多次重定向并且进行了 autoRedirect,
+// 则最后一次重定向的 url 会作为第一个参数返回
+func Request(method, url string, header http.Header, body io.ReadCloser, autoRedirect bool) (string, *http.Response, error) {
 	// 1 转换请求
 	var bodyBytes []byte
 	if body != nil {
 		var err error
 		if bodyBytes, err = io.ReadAll(body); err != nil {
-			return nil, fmt.Errorf("读取请求体失败: %v", err)
+			return "", nil, fmt.Errorf("读取请求体失败: %v", err)
 		}
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(bodyBytes))
 	if err != nil {
-		return nil, fmt.Errorf("创建请求失败: %v", err)
+		return "", nil, fmt.Errorf("创建请求失败: %v", err)
 	}
 	req.Header = header
 
 	// 2 发出请求
-	return client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		return url, resp, err
+	}
+
+	// 3 对重定向响应的处理
+	if autoRedirect && IsRedirectCode(resp.StatusCode) {
+		return Request(method, resp.Header.Get("Location"), header, body, autoRedirect)
+	}
+	return url, resp, err
 }
 
 // ProxyRequest 代理请求
