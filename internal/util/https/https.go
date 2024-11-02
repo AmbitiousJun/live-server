@@ -65,6 +65,12 @@ func ClientRequestUrl(c *gin.Context) string {
 	return fmt.Sprintf("%s%s", ClientRequestHost(c), c.Request.URL.String())
 }
 
+// IsSuccessCode 判断 http code 是否为成功状态
+func IsSuccessCode(code int) bool {
+	codeStr := strconv.Itoa(code)
+	return strings.HasPrefix(codeStr, "2")
+}
+
 // IsRedirectCode 判断 http code 是否是重定向
 //
 // 301, 302, 307, 308
