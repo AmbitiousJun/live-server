@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
@@ -49,7 +50,9 @@ func (y youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 			return resolve.HandleResult{}, fmt.Errorf("解析频道失败: %s, err: %v", params.ChName, err)
 		}
 		playlist = res
-		env.Set(y.playlistCacheKey(params.ChName, params.Format), playlist)
+		key := y.playlistCacheKey(params.ChName, params.Format)
+		env.Set(key, playlist)
+		y.autoRemovePlaylistCache(key)
 	}
 
 	if !params.ProxyM3U {
@@ -137,4 +140,11 @@ func (youtubeHandler) playlistCacheKey(chName, format string) string {
 	}
 
 	return key + ":" + format
+}
+
+// autoRemovePlaylistCache 30 分钟后自动删除播放列表缓存
+func (youtubeHandler) autoRemovePlaylistCache(key string) {
+	env.SetAutoRefresh(key, func(curVal string) (string, error) {
+		return "", env.ErrRemoveAndStop
+	}, time.Minute*30)
 }

@@ -28,6 +28,9 @@ type keyPair struct {
 // diskPreStoreChan 存储预持久化的环境变量
 var diskPreStoreChan = make(chan keyPair, 1000)
 
+// diskPreRemoveChan 存储预删除的环境变量
+var diskPreRemoveChan = make(chan string, 1000)
+
 func init() {
 	envJson := readEnvFromDisk()
 	go loopWritingDisk(envJson)
@@ -40,8 +43,13 @@ func loopWritingDisk(envJson *jsons.Item) {
 		envJson = jsons.NewEmptyObj()
 	}
 	fp := filepath.Join(diskFilePath, diskFileName)
-	for pair := range diskPreStoreChan {
-		envJson.Put(pair.key, jsons.NewByVal(pair.value))
+	for {
+		select {
+		case pair := <-diskPreStoreChan:
+			envJson.Put(pair.key, jsons.NewByVal(pair.value))
+		case key := <-diskPreRemoveChan:
+			envJson.DelKey(key)
+		}
 		if err := os.WriteFile(fp, []byte(envJson.String()), os.ModePerm); err != nil {
 			log.Printf(colors.ToRed("环境变量持久化失败: %v"), err)
 		}

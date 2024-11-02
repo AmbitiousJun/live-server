@@ -11,6 +11,12 @@ func Set(key, value string) {
 	diskPreStoreChan <- keyPair{key: key, value: value}
 }
 
+// Remove 删除环境变量
+func Remove(key string) {
+	globalEnv.Delete(key)
+	diskPreRemoveChan <- key
+}
+
 // Get 获取环境变量
 func Get(key string) (string, bool) {
 	val, ok := globalEnv.Load(key)
