@@ -7,6 +7,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve/handler"
+	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +26,7 @@ func Listen(port int) error {
 	r.GET("/proxy_ts", resolve.ProxyTs)
 
 	handler.Init()
+	ytdlp.Init()
 
 	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
 	log.Printf(colors.ToYellow("查看帮助文档请到浏览器访问: :%d/help"), port)

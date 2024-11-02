@@ -26,7 +26,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 
 	// 非成功响应, 有可能是被拦截
 	if !https.IsSuccessCode(resp.StatusCode) {
-		return "", fmt.Errorf("请求远程地址失败: %d %s", resp.StatusCode, resp.Status)
+		return "", fmt.Errorf("请求远程地址失败: %s", resp.Status)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
