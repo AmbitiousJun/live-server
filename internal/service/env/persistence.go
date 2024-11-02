@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 )
@@ -12,7 +13,7 @@ import (
 const (
 
 	// diskFilePath 持久化文件保存目录
-	diskFilePath = "data"
+	diskFilePath = constant.Dir_DataRoot
 
 	// diskFileName 持久化的文件名称
 	diskFileName = "env.json"

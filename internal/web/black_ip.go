@@ -5,14 +5,15 @@ import (
 	"log"
 
 	"github.com/AmbitiousJun/live-server/internal/bloom"
+	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/toniphan21/go-bf"
 )
 
 const (
-	BloomItemNums  = 1000000           // 布隆过滤器存储的元素个数
-	BloomErrorRate = 0.001             // 布隆过滤器的容错率
-	Env_BlackIps   = "bloom_black_ips" // 存储布隆过滤器数据的环境变量值
-	BlackIpDir     = "data"            // 存储黑名单 ip 的文件路径
+	BloomItemNums  = 1000000               // 布隆过滤器存储的元素个数
+	BloomErrorRate = 0.001                 // 布隆过滤器的容错率
+	Env_BlackIps   = "bloom_black_ips"     // 存储布隆过滤器数据的环境变量值
+	BlackIpDir     = constant.Dir_DataRoot // 存储黑名单 ip 的文件路径
 )
 
 // blackIpBf 存放黑名单 ip 的布隆过滤器实例
