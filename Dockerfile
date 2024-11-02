@@ -20,7 +20,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o main .
 
 # 第二阶段：运行阶段
-FROM alpine:latest
+FROM debian:latest
 
 # 设置时区
 RUN apk add --no-cache tzdata
