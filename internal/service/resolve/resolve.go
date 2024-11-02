@@ -21,6 +21,7 @@ type HandleParams struct {
 	UrlEnv   string // 存储远程地址的环境变量名
 	ProxyM3U bool   // 是否代理 m3u
 	ProxyTs  bool   // 是否代理 ts
+	Format   string // 要处理的直播格式
 }
 
 // ResultType 处理器的处理结果

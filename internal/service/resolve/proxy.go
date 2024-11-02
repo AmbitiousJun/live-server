@@ -1,6 +1,7 @@
 package resolve
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -49,7 +50,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		u, _ := url.Parse("/proxy_ts")
 		q := u.Query()
-		q.Set("remote", tsUrl)
+		q.Set("remote", base64.StdEncoding.EncodeToString([]byte(tsUrl)))
 		u.RawQuery = q.Encode()
 		return u.String()
 	}), nil
@@ -57,7 +58,13 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 
 // ProxyTs 代理 ts 切片
 func ProxyTs(c *gin.Context) {
-	remote := c.Query("remote")
+	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
+	if err != nil {
+		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+	remote := string(remoteBytes)
 
 	_, resp, err := https.Request(http.MethodGet, remote, nil, nil, true)
 	if err != nil {
@@ -69,7 +76,7 @@ func ProxyTs(c *gin.Context) {
 
 	// 非成功响应, 有可能是被拦截
 	if !https.IsSuccessCode(resp.StatusCode) {
-		log.Printf(colors.ToRed("请求远程地址失败: %d %s"), resp.StatusCode, resp.Status)
+		log.Printf(colors.ToRed("请求远程地址失败: %s"), resp.Status)
 		c.String(http.StatusInternalServerError, "代理切片失败失败")
 		return
 	}
