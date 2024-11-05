@@ -36,3 +36,7 @@ services:
 ```shell
 docker-compose up -d
 ```
+
+## 请我喝杯 9.9💰 的 Luckin Coffee☕️
+
+![](assets/2024-11-05-09-59-45.png)
