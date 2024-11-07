@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+var (
+	TvgIdReg      = regexp.MustCompile(`tvg-id="([^"]*)"`)
+	TvgNameReg    = regexp.MustCompile(`tvg-name="([^"]*)"`)
+	TvgLogoReg    = regexp.MustCompile(`tvg-logo="([^"]*)"`)
+	GroupTitleReg = regexp.MustCompile(`group-title="([^"]*)"`)
+	CustomNameReg = regexp.MustCompile(`,\s*(.*)$`)
+)
+
 // ReadContent 将 m3u8 原始文件整理成 Info 信息
 func ReadContent(content string) (map[string]Info, error) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
@@ -50,38 +58,27 @@ func ReadContent(content string) (map[string]Info, error) {
 
 // readChannelInfo 读取电视台信息
 func readChannelInfo(line string) Info {
-	// 格式化 info 信息
-	line = strings.ReplaceAll(line, ",", " ")
-	line = strings.ReplaceAll(line, `"`, "")
-	reg := regexp.MustCompile(`\s+`)
-	line = reg.ReplaceAllString(line, " ")
-
-	// 根据空格分割
-	segs := strings.Split(line, " ")
 	res := Info{}
-	for i, seg := range segs {
-		// 最后一个分段固定为频道自定义别名
-		if i == len(segs)-1 {
-			res.CustomName = seg
-			continue
-		}
 
-		// 根据 = 分割
-		kvs := strings.Split(seg, "=")
-		if len(kvs) != 2 {
-			continue
-		}
-
-		switch kvs[0] {
-		case "tvg-name":
-			res.TvgName = kvs[1]
-		case "tvg-id":
-			res.TvgId = kvs[1]
-		case "tvg-logo":
-			res.TvgLogo = kvs[1]
-		case "group-title":
-			res.GroupTitle = kvs[1]
-		}
+	if TvgIdReg.MatchString(line) {
+		res.TvgId = TvgIdReg.FindStringSubmatch(line)[1]
 	}
+
+	if TvgNameReg.MatchString(line) {
+		res.TvgName = TvgNameReg.FindStringSubmatch(line)[1]
+	}
+
+	if TvgLogoReg.MatchString(line) {
+		res.TvgLogo = TvgLogoReg.FindStringSubmatch(line)[1]
+	}
+
+	if GroupTitleReg.MatchString(line) {
+		res.GroupTitle = GroupTitleReg.FindStringSubmatch(line)[1]
+	}
+
+	if CustomNameReg.MatchString(line) {
+		res.CustomName = CustomNameReg.FindStringSubmatch(line)[1]
+	}
+
 	return res
 }
