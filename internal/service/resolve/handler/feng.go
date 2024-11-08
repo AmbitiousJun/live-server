@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
@@ -33,7 +34,8 @@ const (
 func init() {
 	autoRefreshFengToken()
 	resolve.RegisterHandler(&fengHandler{
-		bucket: ratelimits.NewBucket(1, time.Second*10, 3),
+		numBucket:  ratelimits.NewBucket(1, time.Second*10, 3),
+		rateBucket: ratelimits.NewBucket(1, time.Millisecond*2500, 1),
 	})
 }
 
@@ -80,7 +82,8 @@ var fengChannels = map[string]string{
 
 // fengHandler 凤凰卫视电视直播处理器
 type fengHandler struct {
-	bucket ratelimits.Bucket // 令牌桶限制请求速率
+	numBucket  ratelimits.Bucket // 限制一段时间间隔最多请求数
+	rateBucket ratelimits.Bucket // 限制两个请求之间的最小间隔
 }
 
 func (f *fengHandler) Name() string {
@@ -100,7 +103,7 @@ func (f *fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult,
 		return resolve.HandleResult{}, fmt.Errorf("不支持的频道: %s", params.ChName)
 	}
 
-	f.bucket.Consume(1)
+	f.Wait()
 
 	// 3 请求授权接口
 	u, _ := url.Parse(fengAuthUrl)
@@ -152,4 +155,19 @@ func (f *fengHandler) HelpDoc() string {
 // 如果返回 true, 会自动在帮助文档中加入标记
 func (f *fengHandler) SupportM3UProxy() bool {
 	return false
+}
+
+// Wait 请求速率限制
+func (f *fengHandler) Wait() {
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		f.numBucket.Consume(1)
+	}()
+	go func() {
+		defer wg.Done()
+		f.rateBucket.Consume(1)
+	}()
+	wg.Wait()
 }

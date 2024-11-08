@@ -14,6 +14,9 @@ type bucket struct {
 	// tokenBuf 存放 token, 通道大小代表最大 token 数
 	tokenBuf chan struct{}
 
+	// ticker 生成 token 的定时器
+	ticker *time.Ticker
+
 	// mu 读写并发控制
 	mu sync.Mutex
 }
@@ -32,8 +35,9 @@ func NewBucket(tokenPerProduce uint, sched time.Duration, maxToken uint) Bucket 
 	b := bucket{ok: true}
 	b.tokenBuf = make(chan struct{}, maxToken)
 
+	ticker := time.NewTicker(sched)
+	b.ticker = ticker
 	go func() {
-		ticker := time.NewTicker(sched)
 		for range ticker.C {
 			// 通道满则丢弃 token
 			select {
@@ -93,5 +97,6 @@ func (b *bucket) Destroy() {
 	}
 
 	close(b.tokenBuf)
+	b.ticker.Stop()
 	b.ok = false
 }
