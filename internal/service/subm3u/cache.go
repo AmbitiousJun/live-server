@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	MaxCacheSize = 1 // 内存中维护的订阅列表的最大个数
+	MaxCacheSize = 10 // 内存中维护的订阅列表的最大个数
 )
 
 // cacheMap 存储订阅列表缓存
