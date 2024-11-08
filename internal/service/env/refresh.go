@@ -21,7 +21,6 @@ type EnvChanger func(curVal string) (string, error)
 // 当定时器触发时, 如果内存中没有指定的 key, 不会触发刷新
 func SetAutoRefresh(key string, changer EnvChanger, sched time.Duration) {
 	ticker := time.NewTicker(sched)
-	defer ticker.Stop()
 	go func() {
 		for range ticker.C {
 			curVal, ok := Get(key)
