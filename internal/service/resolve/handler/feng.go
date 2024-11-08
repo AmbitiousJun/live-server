@@ -12,6 +12,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
+	"github.com/AmbitiousJun/live-server/internal/util/ratelimits"
 )
 
 const (
@@ -31,7 +32,9 @@ const (
 
 func init() {
 	autoRefreshFengToken()
-	resolve.RegisterHandler(new(fengHandler))
+	resolve.RegisterHandler(&fengHandler{
+		bucket: ratelimits.NewBucket(1, time.Second*10, 3),
+	})
 }
 
 // autoRefreshFengToken 定时自动刷新 token
@@ -76,13 +79,15 @@ var fengChannels = map[string]string{
 }
 
 // fengHandler 凤凰卫视电视直播处理器
-type fengHandler struct{}
+type fengHandler struct {
+	bucket ratelimits.Bucket // 令牌桶限制请求速率
+}
 
-func (fengHandler) Name() string {
+func (f *fengHandler) Name() string {
 	return "feng"
 }
 
-func (fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
+func (f *fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	// 1 检查 token 变量
 	token, ok := env.Get(Env_FengToken)
 	if !ok {
@@ -94,6 +99,8 @@ func (fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, er
 	if !ok {
 		return resolve.HandleResult{}, fmt.Errorf("不支持的频道: %s", params.ChName)
 	}
+
+	f.bucket.Consume(1)
 
 	// 3 请求授权接口
 	u, _ := url.Parse(fengAuthUrl)
@@ -130,18 +137,19 @@ func (fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, er
 }
 
 // HelpDoc 处理器说明文档
-func (fengHandler) HelpDoc() string {
+func (f *fengHandler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 手机安装《凤凰秀》app，登录 app 后使用抓包工具手动抓取位于请求头的 jwt 登录 token")
 	sb.WriteString("\n2. 将 token 设置到环境变量中即可正常观看, key: feng_token")
 	sb.WriteString("\n3. 设置完 token 之后就不要再去打开 app 了，否则现有 token 失效")
 	sb.WriteString("\n4. 程序每隔 6 小时自动刷新 token")
 	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
+	sb.WriteString("\n6. 该处理器设置了请求速率限制, 每分钟允许请求 6 次，仅自用不适合分享，请避免滥用")
 	return sb.String()
 }
 
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
-func (fengHandler) SupportM3UProxy() bool {
+func (f *fengHandler) SupportM3UProxy() bool {
 	return false
 }
