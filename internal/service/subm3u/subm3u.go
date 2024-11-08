@@ -17,6 +17,10 @@ var (
 
 // ReadContent 将 m3u8 原始文件整理成 Info 信息
 func ReadContent(content string) (map[string]Info, error) {
+	if cache, ok := getCache(content); ok {
+		return cache, nil
+	}
+
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	// 检测首行
 	if scanner.Scan() {
@@ -52,6 +56,8 @@ func ReadContent(content string) (map[string]Info, error) {
 		info.Url = scanner.Text()
 		res[mapKey] = info
 	}
+
+	updateCache(content, res)
 
 	return res, nil
 }
