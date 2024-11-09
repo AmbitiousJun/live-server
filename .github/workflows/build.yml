@@ -25,9 +25,9 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./dist
-        asset_name: binaries
         asset_content_type: application/octet-stream
+      loop: 
+        - find ./dist -type f -exec bash -c 'echo {}; basename {}' \;
 
     - name: Clean up dist directory
       run: rm -rf ./dist
