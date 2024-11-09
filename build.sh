@@ -9,9 +9,6 @@ mkdir -p dist
 # 定义平台数组
 platforms=("darwin/amd64" "darwin/arm64" "linux/386" "linux/arm" "linux/amd64" "linux/arm64" "windows/386" "windows/arm" "windows/amd64" "windows/arm64")
 
-# 版本号
-VERSION=v1.6.0
-
 # 循环编译并重命名可执行文件
 for platform in "${platforms[@]}"
 do
@@ -22,7 +19,7 @@ do
     GOOS=${platform_info[0]} GOARCH=${platform_info[1]}
 
     # 构建可执行文件名
-    output_name="live-server-${GOOS}_${GOARCH}-${VERSION}"
+    output_name="live-server-${GOOS}_${GOARCH}"
 
     # Windows平台特殊处理，添加.exe后缀
     if [ "$GOOS" == "windows" ]; then
@@ -30,7 +27,7 @@ do
     fi
 
     # 编译
-    CGO_ENABLE=0 GOOS=${platform_info[0]} GOARCH=${platform_info[1]} go build -o "dist/$output_name" .
+    CGO_ENABLED=0 GOOS=${platform_info[0]} GOARCH=${platform_info[1]} go build -o "dist/$output_name" .
 
     echo "Built $output_name"
 done
