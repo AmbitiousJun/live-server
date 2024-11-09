@@ -25,6 +25,9 @@ jobs:
       env:
         UPLOAD_URL: ${{ github.event.release.upload_url }}
       run: |
+        # 去掉 {？name,label} 占位符
+        CLEANED_URL="${UPLOAD_URL%\{?name,label\}}"
+        
         for file in ./dist/*; do
           echo "Uploading $file..."
           curl -sSL \
@@ -32,7 +35,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @"$file" \
-            "$UPLOAD_URL?name=$(basename "$file")"
+            "$CLEANED_URL?name=$(basename "$file")"
         done
 
     - name: Clean up dist directory
