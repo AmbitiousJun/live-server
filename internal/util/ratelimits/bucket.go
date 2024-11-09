@@ -38,11 +38,15 @@ func NewBucket(tokenPerProduce uint, sched time.Duration, maxToken uint) Bucket 
 	ticker := time.NewTicker(sched)
 	b.ticker = ticker
 	go func() {
+	out:
 		for range ticker.C {
-			// 通道满则丢弃 token
-			select {
-			case b.tokenBuf <- struct{}{}:
-			default:
+			for i := 1; i <= int(tokenPerProduce); i++ {
+				// 通道满则丢弃 token
+				select {
+				case b.tokenBuf <- struct{}{}:
+				default:
+					continue out
+				}
 			}
 		}
 	}()
@@ -69,6 +73,10 @@ func (b *bucket) Consume(token uint) {
 // TryConsume 非阻塞消耗一定数量的令牌
 // 返回是否消耗成功
 func (b *bucket) TryConsume(token uint) bool {
+	if len(b.tokenBuf) < int(token) {
+		return false
+	}
+
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
