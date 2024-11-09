@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write  # 授予 GITHUB_TOKEN 写入发布资源的权限
+
 jobs:
   build:
     name: Build and Upload
