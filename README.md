@@ -1,8 +1,8 @@
 <h1 align="center">live-server</h1>
 
 <div align="center">
-  <a href="https://github.com/AmbitiousJun/live-server/tree/v1.5.2"><img src="https://img.shields.io/github/v/tag/AmbitiousJun/live-server"></img></a>
-  <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/image-size/ambitiousjun/live-server/v1.5.2"></img></a>
+  <a href="https://github.com/AmbitiousJun/live-server/tree/v1.6.0"><img src="https://img.shields.io/github/v/tag/AmbitiousJun/live-server"></img></a>
+  <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/image-size/ambitiousjun/live-server/v1.6.0"></img></a>
   <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/pulls/ambitiousjun/live-server"></img></a>
   <a href="https://goreportcard.com/report/github.com/AmbitiousJun/live-server"><img src="https://goreportcard.com/badge/github.com/AmbitiousJun/live-server"></img></a>
   <img src="https://img.shields.io/github/license/AmbitiousJun/live-server"></img>
@@ -35,6 +35,22 @@ services:
 
 ```shell
 docker-compose up -d
+```
+
+## 直接运行二进制
+
+从 release 页下载对应的二进制文件
+
+终端运行：
+
+```shell
+live-server -prod=true
+```
+
+程序默认运行在 `5666` 端口上，自定义端口：
+
+```shell
+live-server -prod=true -p 8880
 ```
 
 ## 请我喝杯 9.9💰 的 Luckin Coffee☕️
