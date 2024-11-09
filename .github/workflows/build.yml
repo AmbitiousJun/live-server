@@ -21,25 +21,19 @@ jobs:
     - name: Run build script
       run: ./build.sh
 
-    - name: List files for upload
-      id: list_files
+    - name: Upload binaries to release
+      env:
+        UPLOAD_URL: ${{ github.event.release.upload_url }}
       run: |
-        # 列出 dist 目录中的文件，并将其保存为 workflow output
-        for file in dist/*; do
-          echo "::append-output name=files::$file"
+        for file in ./dist/*; do
+          echo "Uploading $file..."
+          curl -sSL \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"$file" \
+            "$UPLOAD_URL?name=$(basename "$file")"
         done
-
-    # 使用 matrix 策略逐个上传文件
-    - name: Upload each binary to release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{ matrix.file }}
-        asset_name: ${{ matrix.file }}
-        asset_content_type: application/octet-stream
-      strategy:
-        matrix:
-          file: ${{ fromJSON(steps.list_files.outputs.files) }}
 
     - name: Clean up dist directory
       run: rm -rf ./dist
