@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
-	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
 const (
@@ -28,31 +28,20 @@ const (
 )
 
 // youtubeHandler Youtube 直播处理器
-type youtubeHandler struct{}
+type youtubeHandler struct {
+	cacher *youtubeCacher
+}
 
 func init() {
-	resolve.RegisterHandler(new(youtubeHandler))
+	resolve.RegisterHandler(&youtubeHandler{cacher: NewYoutubeCacher()})
 }
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
-func (y youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
-	// 判断是否有缓存的 playlist
-	playlist, ok := env.Get(y.playlistCacheKey(params.ChName, params.Format))
-	if ok && !y.isPlaylistValid(playlist) {
-		playlist = ""
-	}
-
-	// 命中缓存失败, 调用 yt-dlp 进行解析
-	if playlist == "" {
-		formatCode := y.chooseFormat(params.Format)
-		res, err := ytdlp.Extract(YoutubeResPrefix+params.ChName, formatCode)
-		if err != nil {
-			return resolve.HandleResult{}, fmt.Errorf("解析频道失败: %s, err: %v", params.ChName, err)
-		}
-		playlist = res
-		key := y.playlistCacheKey(params.ChName, params.Format)
-		env.Set(key, playlist)
-		y.autoRemovePlaylistCache(key)
+func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
+	formatCode := y.chooseFormat(params.Format)
+	playlist, err := y.cacher.GetM3U(params.ChName, formatCode)
+	if err != nil {
+		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
 	}
 
 	if !params.ProxyM3U {
@@ -75,12 +64,12 @@ func (y youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 }
 
 // Name 处理器名称
-func (youtubeHandler) Name() string {
+func (y *youtubeHandler) Name() string {
 	return "youtube"
 }
 
 // HelpDoc 处理器说明文档
-func (youtubeHandler) HelpDoc() string {
+func (y *youtubeHandler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 频道名称即为 youtube 直播的 id (在浏览器地址上查看)")
 	sb.WriteString("\n2. 使用该处理器时，服务端必须具有外网环境")
@@ -94,23 +83,12 @@ func (youtubeHandler) HelpDoc() string {
 // SupportProxy 是否支持 m3u 代理
 //
 // 如果返回 true, 会自动在帮助文档中加入标记
-func (youtubeHandler) SupportM3UProxy() bool {
+func (y *youtubeHandler) SupportM3UProxy() bool {
 	return true
 }
 
-// isPlaylistValid 检查播放列表是否有效
-func (youtubeHandler) isPlaylistValid(playlist string) bool {
-	_, resp, err := https.Request(http.MethodGet, playlist, nil, nil, true)
-	if err != nil {
-		log.Printf(colors.ToRed("验证 playlist 有效性失败: %v"), err)
-		return false
-	}
-	defer resp.Body.Close()
-	return https.IsSuccessCode(resp.StatusCode)
-}
-
 // chooseFormat 选择一个合适的 yt-dlp formatCode
-func (youtubeHandler) chooseFormat(wantFmt string) string {
+func (y *youtubeHandler) chooseFormat(wantFmt string) string {
 	// 默认使用 720 p
 	res := "95"
 
@@ -128,23 +106,149 @@ func (youtubeHandler) chooseFormat(wantFmt string) string {
 	return res
 }
 
-// playlistCacheKey 获取播放列表在环境变量中的缓存键值
-//
-// format 参数只有在开启了自定义 format 功能之后才会被拼接到 key 中
-func (youtubeHandler) playlistCacheKey(chName, format string) string {
-	key := Env_YoutubePlaylistCache + ":" + chName
+var (
 
-	enable, ok := env.Get(Env_YoutubeCustomFormatEnable)
-	if !ok || enable != "1" {
-		return key
+	// youtubeCacheTimeout youtube 频道缓存过期时间
+	youtubeCacheTimeout = time.Hour.Milliseconds()
+)
+
+// youtubeCacher m3u 缓存器
+type youtubeCacher struct {
+
+	// channels 频道列表, 以 youtube 的 id 作为 key
+	channels map[string]*struct {
+		url      string // m3u 地址
+		lastRead int64  // 最后一次读取时间戳
 	}
 
-	return key + ":" + format
+	// mu 并发控制
+	mu sync.RWMutex
 }
 
-// autoRemovePlaylistCache 30 分钟后自动删除播放列表缓存
-func (youtubeHandler) autoRemovePlaylistCache(key string) {
-	env.SetAutoRefresh(key, func(curVal string) (string, error) {
-		return "", env.ErrRemoveAndStop
-	}, time.Minute*30)
+// NewYoutubeCacher 创建一个 youtube m3u 缓存器
+func NewYoutubeCacher() *youtubeCacher {
+	yc := new(youtubeCacher)
+	yc.channels = make(map[string]*struct {
+		url      string
+		lastRead int64
+	})
+
+	// 每隔 30 分钟维护一次内存
+	ticker := time.NewTicker(time.Minute * 30)
+	go func() {
+		for range ticker.C {
+			yc.UpdateAll()
+		}
+	}()
+
+	return yc
+}
+
+// CalcCacheKey 计算频道缓存 key
+func (yc *youtubeCacher) CalcCacheKey(chId, formatCode string) string {
+	return chId + ":" + formatCode
+}
+
+// ResolveCacheKey 解析缓存 key
+func (yc *youtubeCacher) ResolveCacheKey(cacheKey string) (chId, formatCode string, valid bool) {
+	idx := strings.LastIndex(cacheKey, ":")
+	if idx == -1 {
+		valid = false
+		return
+	}
+	chId, formatCode, valid = cacheKey[:idx], cacheKey[idx+1:], true
+	return
+}
+
+// Get 获取指定频道 m3u
+func (yc *youtubeCacher) GetM3U(chId, formatCode string) (m3u string, err error) {
+	defer func() {
+		if err == nil {
+			// 更新最后读取时间
+			if chCache, ok := yc.channels[yc.CalcCacheKey(chId, formatCode)]; ok {
+				chCache.lastRead = time.Now().UnixMilli()
+			}
+		}
+	}()
+
+	// 缓冲区存在该频道, 直接返回
+	yc.mu.RLock()
+	chCache, ok := yc.channels[yc.CalcCacheKey(chId, formatCode)]
+	yc.mu.RUnlock()
+	if ok {
+		return chCache.url, nil
+	}
+
+	// 获取最新的 m3u 并进行缓存
+	return yc.CacheM3U(chId, formatCode)
+}
+
+// CacheM3U 调用 yt-dlp 获取频道的 m3u 地址
+func (yc *youtubeCacher) CacheM3U(chId, formatCode string) (string, error) {
+	yc.mu.Lock()
+	defer yc.mu.Unlock()
+
+	res, err := ytdlp.Extract(YoutubeResPrefix+chId, formatCode)
+	if err != nil {
+		return "", fmt.Errorf("调用 yt-dlp 失败: %v", err)
+	}
+
+	// 将地址维护到内存中
+	chCache, ok := yc.channels[yc.CalcCacheKey(chId, formatCode)]
+	if !ok {
+		chCache = &struct {
+			url      string
+			lastRead int64
+		}{}
+	}
+
+	chCache.url = res
+	yc.channels[yc.CalcCacheKey(chId, formatCode)] = chCache
+	return res, nil
+}
+
+// UpdateAll 更新缓存, 同时淘汰太长时间未读的列表
+func (yc *youtubeCacher) UpdateAll() {
+	log.Println(colors.ToBlue("youtube 缓存开始刷新..."))
+	successCnt, failCnt, removeCnt := 0, 0, 0
+	defer func() {
+		log.Printf(colors.ToGreen("youtube 缓存刷新完成, 成功: %d, 失败: %d, 移除: %d"), successCnt, failCnt, removeCnt)
+	}()
+
+	toRemoves := make([]string, 0)
+	for key, value := range yc.channels {
+		if value.lastRead+youtubeCacheTimeout < time.Now().UnixMilli() {
+			// 缓存过期
+			toRemoves = append(toRemoves, key)
+			removeCnt++
+			continue
+		}
+
+		chId, formatCode, ok := yc.ResolveCacheKey(key)
+		if !ok {
+			// 无效的 key
+			toRemoves = append(toRemoves, key)
+			removeCnt++
+			continue
+		}
+
+		_, err := yc.CacheM3U(chId, formatCode)
+		if err != nil {
+			failCnt++
+		} else {
+			successCnt++
+		}
+	}
+
+	if len(toRemoves) == 0 {
+		return
+	}
+
+	// 移除过期缓存
+	yc.mu.Lock()
+	defer yc.mu.Unlock()
+
+	for _, key := range toRemoves {
+		delete(yc.channels, key)
+	}
 }
