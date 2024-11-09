@@ -1,0 +1,34 @@
+name: Build and Upload Release Binaries
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build and Upload
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v3
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.23.2
+
+    - name: Run build script
+      run: ./build.sh
+
+    - name: Upload binaries to release
+      uses: actions/upload-release-asset@v1
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        release_id: ${{ github.event.release.id }}
+        asset_path: ./dist
+        asset_name: binaries
+        asset_content_type: application/octet-stream
+
+    - name: Clean up dist directory
+      run: rm -rf ./dist
