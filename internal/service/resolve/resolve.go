@@ -84,9 +84,10 @@ func GetHandler(name string) (Handler, bool) {
 // HelpDoc 输出所有解析处理器的帮助文档
 func HelpDoc() string {
 	sb := strings.Builder{}
+	version := "v1.5.2"
 
 	// 程序说明
-	sb.WriteString("\nlive-server 帮助文档\n")
+	sb.WriteString("\nlive-server " + version + " 帮助文档\n")
 	sb.WriteString("\n仓库地址：https://github.com/AmbitiousJun/live-server")
 	sb.WriteString("\n项目说明：本项目仅限个人测试使用，切勿用于大肆传播！！")
 	sb.WriteString("\n")
