@@ -235,9 +235,12 @@ func (yc *youtubeCacher) UpdateAll() {
 		_, err := yc.CacheM3U(chId, formatCode)
 		if err != nil {
 			failCnt++
-		} else {
-			successCnt++
+			toRemoves = append(toRemoves, key)
+			removeCnt++
+			continue
 		}
+
+		successCnt++
 	}
 
 	if len(toRemoves) == 0 {
