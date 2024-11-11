@@ -71,7 +71,7 @@ func autoDownloadExec() {
 			return
 		}
 		execOk = true
-		log.Println(colors.ToGreen("yt-dlp 环境检测通过 ✔️"))
+		log.Println(colors.ToGreen("yt-dlp 环境检测通过 ✓"))
 		return
 	}
 
@@ -110,5 +110,5 @@ func autoDownloadExec() {
 
 	// 标记就绪状态
 	execOk = true
-	log.Printf(colors.ToGreen("yt-dlp 自动下载成功 ✔️, 路径: %s"), execPath)
+	log.Printf(colors.ToGreen("yt-dlp 自动下载成功 ✓, 路径: %s"), execPath)
 }
