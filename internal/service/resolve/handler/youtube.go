@@ -167,6 +167,7 @@ func NewYoutubeCacher() *youtubeCacher {
 					ch = ""
 				}
 				req.resChan <- ch
+				close(req.resChan)
 			}
 		}
 	}()
