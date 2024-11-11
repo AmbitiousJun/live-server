@@ -148,7 +148,12 @@ func Request(method, url string, header http.Header, body io.ReadCloser, autoRed
 
 	// 3 对重定向响应的处理
 	if autoRedirect && IsRedirectCode(resp.StatusCode) {
-		return Request(method, resp.Header.Get("Location"), header, body, autoRedirect)
+		loc := resp.Header.Get("Location")
+		if strings.HasPrefix(loc, "/") {
+			// 需要拼接上当前请求的前缀后再进行重定向
+			loc = fmt.Sprintf("%s://%s%s", req.URL.Scheme, req.URL.Host, loc)
+		}
+		return Request(method, loc, header, body, autoRedirect)
 	}
 	return url, resp, err
 }
