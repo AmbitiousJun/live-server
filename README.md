@@ -5,8 +5,7 @@
   <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/image-size/ambitiousjun/live-server/v1.6.1"></img></a>
   <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/pulls/ambitiousjun/live-server"></img></a>
   <a href="https://goreportcard.com/report/github.com/AmbitiousJun/live-server"><img src="https://goreportcard.com/badge/github.com/AmbitiousJun/live-server"></img></a>
-  <a href="https://github.com/AmbitiousJun/live-server/releases/latest"><img src="https://img.shields.io/github/downloads/AmbitiousJun/live-server/total
-  "></img></a>
+  <a href="https://github.com/AmbitiousJun/live-server/releases/latest"><img src="https://img.shields.io/github/downloads/AmbitiousJun/live-server/total"></img></a>
   <img src="https://img.shields.io/github/license/AmbitiousJun/live-server"></img>
 </div>
 
