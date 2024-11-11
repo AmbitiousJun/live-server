@@ -18,7 +18,7 @@ import (
 const (
 
 	// DefaultReleasePage 默认使用的 yt-dlp 发布页地址
-	DefaultReleasePage = "https://ghproxy.cn/https://github.com/yt-dlp/yt-dlp/releases/download/2024.10.22"
+	DefaultReleasePage = "https://ghproxy.cn/https://github.com/yt-dlp/yt-dlp/releases/latest/download"
 
 	// Env_ReleasePage 通过设置环境变量, 覆盖默认的发布页地址
 	Env_ReleasePage = "ytdlp_release_page"
