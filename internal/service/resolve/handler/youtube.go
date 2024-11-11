@@ -212,6 +212,9 @@ func (yc *youtubeCacher) UpdateAll() {
 	log.Println(colors.ToBlue("youtube 缓存开始刷新..."))
 	successCnt, failCnt, removeCnt := 0, 0, 0
 	defer func() {
+		if successCnt <= 0 && failCnt <= 0 && removeCnt <= 0 {
+			return
+		}
 		log.Printf(colors.ToGreen("youtube 缓存刷新完成, 成功: %d, 失败: %d, 移除: %d"), successCnt, failCnt, removeCnt)
 	}()
 
