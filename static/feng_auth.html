@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>凤凰秀登录授权</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .result-wrap {
+        margin-top: 40px;
+        padding: 20px;
+      }
+      .result-wrap .message {
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <!-- 手机号输入框 -->
+      <div class="mb-3 row">
+        <label for="phone" class="col-sm-2 col-form-label">手机号</label>
+        <div class="col-sm-10">
+          <input
+            type="text"
+            class="form-control"
+            id="phone"
+            placeholder="请输入手机号"
+          />
+        </div>
+      </div>
+
+      <!-- 密码输入框 -->
+      <div class="mb-3 row">
+        <label for="password" class="col-sm-2 col-form-label">密码</label>
+        <div class="col-sm-10">
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            placeholder="请输入密码"
+          />
+        </div>
+      </div>
+
+      <!-- 地区码输入框 -->
+      <div class="mb-3 row">
+        <label for="code" class="col-sm-2 col-form-label">地区码</label>
+        <div class="col-sm-10">
+          <input
+            type="text"
+            class="form-control"
+            id="code"
+            placeholder="请输入地区码"
+            value="86"
+          />
+        </div>
+      </div>
+
+      <!-- 凤凰秀令牌 -->
+      <div class="mb-3 row">
+        <label for="feng_show_token" class="col-sm-2 col-form-label"
+          >凤凰秀令牌</label
+        >
+        <div class="col-sm-10">
+          <textarea class="form-control" id="feng_show_token" rows="4">
+UDSWan3gPNlRRRrqe1hjS4ESh/R1RhoY1pEvQHemh7ilJXWTqCGmHnZtn7F9pSra6176CWqNZ5YFcfmauxKs98j3Dte05xTNnkvFPWPXWFwNXJyw2shdueGOn5k2pYo6yM37zSG6vXdac9WUMkAW2QWIMc8kInnwzrOU0MxTcgc</textarea
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div class="text-center">
+      <button onclick="handleAuth()" type="button" class="btn btn-primary">
+        登录获取 token
+      </button>
+    </div>
+
+    <!-- 结果反馈 -->
+    <div class="result-wrap">
+      <div class="message">请填入自己的凤凰秀账号信息后点击登录获取 token</div>
+      <div class="auth-token">
+        <textarea
+          class="form-control"
+          disabled
+          id="feng_auth_token"
+          placeholder="授权信息在这里展示"
+        ></textarea>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const handleAuth = () => {
+      const phone = document.querySelector("#phone").value;
+      const password = document.querySelector("#password").value;
+      const code = document.querySelector("#code").value;
+      const fengShowToken = document.querySelector("#feng_show_token").value;
+      const data = {phone, password, code, ticket: fengShowToken};
+
+      const messageElm = document.querySelector(".result-wrap .message");
+      messageElm.innerHTML = "正在授权中, 请稍后...";
+      const tokenElm = document.querySelector(".result-wrap #feng_auth_token");
+
+      // 发起 POST 请求
+      fetch("http://m.fengshows.com/user/oauth/login", {
+        method: "POST", // 使用 POST 方法
+        headers: {
+          "Content-Type": "application/json", // 指定请求体类型为 JSON
+        },
+        body: JSON.stringify(data), // 将对象转换为 JSON 字符串
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json(); // 解析 JSON 响应体
+        })
+        .then((data) => {
+          if (data.status !== '0') {
+            throw new Error(`授权失败: ${data.message}`);
+          }
+          const token = data?.data?.token;
+          messageElm.innerHTML = '授权成功，请将获取到的值设置到程序的环境变量中，key: feng_token';
+          tokenElm.value = token;
+        })
+        .catch((error) => {
+          messageElm.innerHTML = error;
+          setTimeout(() => messageElm.innerHTML = '请填入自己的凤凰秀账号信息后点击登录获取 token', 5000);
+        });
+    };
+  </script>
+</html>
