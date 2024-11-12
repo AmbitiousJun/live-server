@@ -1,10 +1,12 @@
 package web
 
 import (
+	"encoding/base64"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
@@ -91,5 +93,9 @@ func HandleLive(c *gin.Context) {
 
 // HandleHelpDoc 输出帮助文档
 func HandleHelpDoc(c *gin.Context) {
-	c.String(http.StatusOK, resolve.HelpDoc())
+	content := strings.ReplaceAll(resolve.HelpDoc(), "\n", "<br/>")
+	tplBytes, _ := base64.StdEncoding.DecodeString(constant.HelpDocHtmlTemplate)
+	result := strings.ReplaceAll(string(tplBytes), "${docContent}", content)
+	c.Header("Content-Type", "text/html")
+	c.String(http.StatusOK, result)
 }
