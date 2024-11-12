@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>live-server 帮助文档</title>
+  </head>
+  <body>
+    <div class="container">${docContent}</div>
+
+    <script>
+      window.onload = () => {
+        const container = document.querySelector('.container');
+        container.innerHTML = container.innerHTML.replace(/\$\{clientOrigin\}/g, location.origin);
+      }
+    </script>
+  </body>
+</html>

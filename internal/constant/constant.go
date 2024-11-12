@@ -4,3 +4,9 @@ const (
 	Dir_DataRoot = "data" // 数据存放根目录
 	// Dir_DataRoot = "/Users/ambitious/Desktop/code/go/live-server/data" // 数据存放根目录, 开发环境
 )
+
+const (
+
+	// HelpDocHtmlTemplate 帮助文档的 html 模板
+	HelpDocHtmlTemplate = `PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04IiAvPgogICAgPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAiIC8+CiAgICA8dGl0bGU+bGl2ZS1zZXJ2ZXIg5biu5Yqp5paH5qGjPC90aXRsZT4KICA8L2hlYWQ+CiAgPGJvZHk+CiAgICA8ZGl2IGNsYXNzPSJjb250YWluZXIiPiR7ZG9jQ29udGVudH08L2Rpdj4KCiAgICA8c2NyaXB0PgogICAgICB3aW5kb3cub25sb2FkID0gKCkgPT4gewogICAgICAgIGNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJy5jb250YWluZXInKTsKICAgICAgICBjb250YWluZXIuaW5uZXJIVE1MID0gY29udGFpbmVyLmlubmVySFRNTC5yZXBsYWNlKC9cJFx7Y2xpZW50T3JpZ2luXH0vZywgbG9jYXRpb24ub3JpZ2luKTsKICAgICAgfQogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==`
+)
