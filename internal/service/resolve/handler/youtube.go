@@ -120,11 +120,6 @@ type youtubePreCacheRequest struct {
 	resChan    chan string // 用于接收请求完成的 m3u 地址的通道
 }
 
-// NewYoutubePreCacheRequest 创建一个初始化好响应通道的预缓存请求
-func NewYoutubePreCacheRequest(chId, formatCode string) *youtubePreCacheRequest {
-	return &youtubePreCacheRequest{chId: chId, formatCode: formatCode, resChan: make(chan string)}
-}
-
 // youtubeCacher m3u 缓存器
 type youtubeCacher struct {
 
@@ -135,7 +130,7 @@ type youtubeCacher struct {
 	}
 
 	// preCacheReqChan 预缓存请求通道
-	preCacheReqChan chan *youtubePreCacheRequest
+	preCacheReqChan chan youtubePreCacheRequest
 
 	// mu 并发控制
 	mu sync.RWMutex
@@ -148,7 +143,7 @@ func NewYoutubeCacher() *youtubeCacher {
 		url      string
 		lastRead int64
 	})
-	yc.preCacheReqChan = make(chan *youtubePreCacheRequest, 100)
+	yc.preCacheReqChan = make(chan youtubePreCacheRequest, 100)
 
 	// 每隔 30 分钟维护一次内存
 	ticker := time.NewTicker(time.Minute * 30)
@@ -158,7 +153,7 @@ func NewYoutubeCacher() *youtubeCacher {
 			case <-ticker.C:
 				yc.UpdateAll()
 			case req := <-yc.preCacheReqChan:
-				if req == nil {
+				if req.resChan == nil {
 					break
 				}
 				ch, err := yc.RequestChannel(req.chId, req.formatCode)
@@ -213,7 +208,11 @@ func (yc *youtubeCacher) GetM3U(chId, formatCode string) (m3u string, err error)
 	}
 
 	// 排队请求新频道
-	req := NewYoutubePreCacheRequest(chId, formatCode)
+	req := youtubePreCacheRequest{
+		chId:       chId,
+		formatCode: formatCode,
+		resChan:    make(chan string),
+	}
 	select {
 	case yc.preCacheReqChan <- req:
 	default:
@@ -231,7 +230,6 @@ func (yc *youtubeCacher) GetM3U(chId, formatCode string) (m3u string, err error)
 
 // UpdateAll 更新缓存, 同时淘汰太长时间未读的列表
 func (yc *youtubeCacher) UpdateAll() {
-	log.Println(colors.ToBlue("youtube 缓存开始刷新..."))
 	successCnt, failCnt, removeCnt := 0, 0, 0
 	defer func() {
 		if successCnt <= 0 && failCnt <= 0 && removeCnt <= 0 {
