@@ -47,6 +47,9 @@ func HandleLive(c *gin.Context) {
 
 	ua := c.Request.Header.Get("User-Agent")
 	clientIp := c.ClientIP()
+	if ipInfo, ok := GetIpAddrInfo(clientIp); ok {
+		clientIp += " (" + ipInfo + ")"
+	}
 	log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
 
 	if IsBlackIp(clientIp) {
