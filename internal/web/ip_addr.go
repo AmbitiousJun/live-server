@@ -3,6 +3,7 @@ package web
 import (
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
@@ -43,6 +44,11 @@ func init() {
 		for ip := range ipPreCacheChan {
 			// 缓存过的不重复请求
 			if _, ok := ipAddrCacheMap.Load(ip); ok {
+				continue
+			}
+			// 只查询 ipv4 地址的信息
+			pip := net.ParseIP(ip)
+			if pip == nil || pip.To4() == nil {
 				continue
 			}
 			// 已经到达最大重试次数
