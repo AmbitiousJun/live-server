@@ -102,3 +102,12 @@ func HandleHelpDoc(c *gin.Context) {
 	c.Header("Content-Type", "text/html")
 	c.String(http.StatusOK, result)
 }
+
+// ToFengAuthPage 跳转到凤凰秀授权地址
+func ToFengAuthPage(c *gin.Context) {
+	bytes, _ := base64.StdEncoding.DecodeString(constant.FengAuthHtml)
+	c.Header("Content-Type", "text/html")
+	c.Status(http.StatusOK)
+	c.Writer.Write(bytes)
+	c.Writer.Flush()
+}
