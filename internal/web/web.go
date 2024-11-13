@@ -25,11 +25,11 @@ func Listen(port int) error {
 	// 利用服务器流量代理切片
 	r.GET("/proxy_ts", resolve.ProxyTs)
 
+	// 凤凰秀授权页
+	r.GET("/feng/auth", ToFengAuthPage)
+
 	handler.Init()
 	ytdlp.Init()
-
-	// 凤凰秀授权页
-	r.GET("/feng/auth", handler.ToFengAuthPage)
 
 	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
 	log.Printf(colors.ToYellow("查看帮助文档请到浏览器访问: :%d/help"), port)

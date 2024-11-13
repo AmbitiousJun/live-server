@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,13 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 	"github.com/AmbitiousJun/live-server/internal/util/ratelimits"
-	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -40,15 +37,6 @@ func init() {
 		numBucket:  ratelimits.NewBucket(1, time.Second*10, 3),
 		rateBucket: ratelimits.NewBucket(1, time.Millisecond*2500, 1),
 	})
-}
-
-// ToFengAuthPage 跳转到凤凰秀授权地址
-func ToFengAuthPage(c *gin.Context) {
-	bytes, _ := base64.StdEncoding.DecodeString(constant.FengAuthHtml)
-	c.Header("Content-Type", "text/html")
-	c.Status(http.StatusOK)
-	c.Writer.Write(bytes)
-	c.Writer.Flush()
 }
 
 // autoRefreshFengToken 定时自动刷新 token
