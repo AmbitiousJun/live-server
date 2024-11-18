@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
@@ -13,17 +14,21 @@ import (
 )
 
 func init() {
-	resolve.RegisterHandler(new(remoteM3UHandler))
+	resolve.RegisterHandler(&remoteM3UHandler{
+		cc: https.NewCacheClient(1000, time.Minute*10),
+	})
 }
 
 // remoteM3UHandler 远程 m3u8 直播源处理器
-type remoteM3UHandler struct{}
+type remoteM3UHandler struct {
+	cc *https.CacheClient
+}
 
-func (remoteM3UHandler) Name() string {
+func (h *remoteM3UHandler) Name() string {
 	return "remote_m3u"
 }
 
-func (remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
+func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	// 获取环境变量
 	url, ok := env.Get(params.UrlEnv)
 	if !ok {
@@ -31,7 +36,7 @@ func (remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	}
 
 	// 请求远程 m3u 文本
-	_, resp, err := https.Request(http.MethodGet, url, nil, nil, true)
+	_, resp, err := h.cc.Request(http.MethodGet, url, nil, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求远程地址失败: %v", err)
 	}
@@ -74,7 +79,7 @@ func (remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 }
 
 // HelpDoc 处理器说明文档
-func (remoteM3UHandler) HelpDoc() string {
+func (h *remoteM3UHandler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 将有效的 m3u 在线地址设置到程序的环境变量中，变量名随意，如：remote_m3u_v6")
 	sb.WriteString("\n2. 调用处理器时，传递有效的频道名称和环境变量名，即可观看")
@@ -85,6 +90,6 @@ func (remoteM3UHandler) HelpDoc() string {
 
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
-func (remoteM3UHandler) SupportM3UProxy() bool {
+func (h *remoteM3UHandler) SupportM3UProxy() bool {
 	return true
 }
