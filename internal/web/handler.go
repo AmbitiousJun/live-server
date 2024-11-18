@@ -71,13 +71,12 @@ func HandleLive(c *gin.Context) {
 	}
 
 	if result.Type == resolve.ResultRedirect {
-		log.Printf(colors.ToGreen("重定向到: %s"), result.Url)
-		c.Redirect(http.StatusTemporaryRedirect, result.Url)
+		log.Printf(colors.ToGreen("重定向请求: %s"), result.Url)
+		c.Redirect(http.StatusFound, result.Url)
 		return
 	}
 
 	if result.Type == resolve.ResultProxy {
-		log.Println(colors.ToGreen("请求被代理"))
 		c.Status(result.Code)
 		if result.Header != nil {
 			for key, values := range result.Header {
