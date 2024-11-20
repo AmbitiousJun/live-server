@@ -69,7 +69,10 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 	}
 
 	respHeader := make(http.Header)
-	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl")
+	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl; charset=utf-8")
+	respHeader.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	respHeader.Set("Pragma", "no-cache")
+	respHeader.Set("Expires", "0")
 	return resolve.HandleResult{
 		Type:   resolve.ResultProxy,
 		Code:   http.StatusOK,
