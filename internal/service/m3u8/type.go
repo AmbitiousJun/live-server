@@ -6,7 +6,7 @@ import "strings"
 var ParentHeadComments = map[string]struct{}{
 	"#EXTM3U": {}, "#EXT-X-VERSION": {}, "#EXT-X-MEDIA-SEQUENCE": {},
 	"#EXT-X-TARGETDURATION": {}, "#EXT-X-MEDIA": {}, "#EXT-X-INDEPENDENT-SEGMENTS": {},
-	"#EXT-X-STREAM-INF": {},
+	"#EXT-X-STREAM-INF": {}, "#EXT-X-DISCONTINUITY-SEQUENCE": {},
 }
 
 // ParentTailComments 记录文件尾注释
