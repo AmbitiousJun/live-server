@@ -92,12 +92,32 @@ func HelpDoc() string {
 	sb.WriteString("\n项目说明：本项目仅限个人测试使用，切勿用于大肆传播！！")
 	sb.WriteString("\n")
 
+	// 程序密钥相关
+	sb.WriteString("\n程序密钥说明：")
+	sb.WriteString("\n1. 每次启动运行时，会初始化一次密钥并在日志中输出，注意查看")
+	sb.WriteString("\n2. 程序密钥会保存在【数据目录/secret.txt】文件中，初始化时如果文件不存在会自动生成一个随机密钥")
+	sb.WriteString("\n3. 可通过修改 secret.txt 文件自定义密钥")
+	sb.WriteString("\n4. 对于一些不便公开的接口，需要将程序密钥设置为接口的 secret 参数才可以成功调用")
+	sb.WriteString("\n")
+
+	// 地域白名单相关
+	sb.WriteString("\n地域白名单说明：")
+	sb.WriteString("\n1. 如果服务部署在公网上，推荐使用这个功能")
+	sb.WriteString("\n2. 如果没有设置过白名单，默认允许所有 ip 进行访问")
+	sb.WriteString("\n3. 功能生效的前提是程序能正确获取到客户端 ip 的归属地信息（可以在运行日志中加以确认）")
+	sb.WriteString("\n4. 接口调用格式参考下方说明，其中 area 传递格式是将地域用 '/' 符号逐级隔开，如（广东/佛山/南海）")
+	sb.WriteString("\n5. 场景举例说明：在只设置了一个白名单的前提下，如果【area=广东】，则除了广东地区之外的所有 ip 都会被屏蔽，如果【area=广东/佛山】，则广东省内除了佛山市之外的其他市的 ip 都会被屏蔽")
+	sb.WriteString("\n6. 白名单只需要设置一次，数据会持久化在【数据目录/white_area.json】文件中")
+	sb.WriteString("\n")
+
 	// 接口调用相关
 	sb.WriteString("\n接口调用说明：")
 	sb.WriteString("\n1. 设置环境变量(GET) => ${clientOrigin}/env?key={变量名}&value={变量值}&secret={程序密钥}")
 	sb.WriteString("\n2. 帮助文档(GET) => ${clientOrigin}/help")
 	sb.WriteString("\n3. 调用处理器(GET) => ${clientOrigin}/handler/{处理器名}/ch/{频道名}[可选的 query 参数，如：?url_env=remote_m3u_v6]")
 	sb.WriteString("\n4. ip 黑名单(GET) => ${clientOrigin}/black_ip?ip={要加入黑名单的地址}&secret={程序密钥}")
+	sb.WriteString("\n5. 设置地域白名单(GET) => ${clientOrigin}/white_area/set?area={要加入白名单的地域}&secret={程序密钥}")
+	sb.WriteString("\n6. 移除地域白名单(GET) => ${clientOrigin}/white_area/del?area={要移除白名单的地域}&secret={程序密钥}")
 	sb.WriteString("\n")
 
 	// 代理参数

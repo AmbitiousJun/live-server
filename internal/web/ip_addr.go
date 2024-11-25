@@ -167,7 +167,7 @@ func resolveIpv6Addr(ip string) (string, error) {
 	}
 	sb.WriteString(local)
 
-	if isp, ok := resJson.Attr("data").Attr("isp").String(); ok {
+	if isp, ok := resJson.Attr("data").Attr("isp").String(); ok && isp != "" {
 		sb.WriteString("|")
 		sb.WriteString(isp)
 	}

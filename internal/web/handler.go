@@ -8,6 +8,7 @@ import (
 
 	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
 	"github.com/gin-gonic/gin"
@@ -54,6 +55,10 @@ func HandleLive(c *gin.Context) {
 	}
 
 	if ipInfo, ok := GetIpAddrInfo(clientIp); ok {
+		if !whitearea.Passable(ipInfo) {
+			c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
+			return
+		}
 		clientIp += " (" + ipInfo + ")"
 	}
 	log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
