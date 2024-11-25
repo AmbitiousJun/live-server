@@ -148,7 +148,7 @@ func (f *fengHandler) HelpDoc() string {
 	sb.WriteString("\n4. 程序每隔 6 小时自动刷新 token")
 	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
 	sb.WriteString("\n6. 该处理器设置了请求速率限制, 每分钟允许请求 6 次，仅自用不适合分享，请避免滥用")
-	sb.WriteString("\n7. 如不会自己抓 token，可以在此页面：${clientOrigin}/feng/auth 使用手机号登录授权获取，不保证可用性，有问题可以到 issue 区反馈")
+	sb.WriteString("\n7. 如不会自己抓 token，可以在此页面：${clientOrigin}/feng/auth?secret={程序密钥} 使用手机号登录授权获取，不保证可用性，有问题可以到 issue 区反馈")
 	return sb.String()
 }
 
