@@ -48,6 +48,9 @@ func HandleLive(c *gin.Context) {
 
 	ua := c.Request.Header.Get("User-Agent")
 	clientIp := c.ClientIP()
+	defer func() {
+		log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
+	}()
 
 	if IsBlackIp(clientIp) {
 		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
@@ -61,7 +64,6 @@ func HandleLive(c *gin.Context) {
 		}
 		clientIp += " (" + ipInfo + ")"
 	}
-	log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
 
 	result, err := handler.Handle(resolve.HandleParams{
 		ChName:   cName,
