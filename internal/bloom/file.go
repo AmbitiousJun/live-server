@@ -2,7 +2,6 @@ package bloom
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"math/big"
 	"os"
@@ -30,19 +29,16 @@ func (fs *FileStorage) Set(index uint32) {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
 
-	filePath := filepath.Join(fs.fileDir, bloomFileName)
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-	if err != nil {
-		log.Printf(colors.ToRed("布隆过滤器无法生效, 打开本地文件失败: %s, err: %v"), filePath, err)
-		return
-	}
+	fp := filepath.Join(fs.fileDir, bloomFileName)
 
 	// 标记比特位
 	if fs.bigInt == nil {
 		fs.bigInt = new(big.Int)
-		bytes, err := io.ReadAll(file)
+		bytes, err := os.ReadFile(fp)
 		if err != nil {
-			log.Printf(colors.ToRed("布隆过滤器无法生效, 读取本地文件失败: %s, err: %v"), filePath, err)
+			if !strings.Contains(err.Error(), "no such file or directory") {
+				log.Printf(colors.ToRed("布隆过滤器无法生效, 读取本地文件失败: %s, err: %v"), fp, err)
+			}
 		} else {
 			fs.bigInt.SetBytes(bytes)
 		}
@@ -50,8 +46,8 @@ func (fs *FileStorage) Set(index uint32) {
 	fs.bigInt.SetBit(fs.bigInt, int(index), 1)
 
 	// 持久化
-	if _, err = file.Write(fs.bigInt.Bytes()); err != nil {
-		log.Printf(colors.ToRed("布隆过滤器持久化失败: %s, err: %v"), filePath, err)
+	if err := os.WriteFile(fp, fs.bigInt.Bytes(), os.ModePerm); err != nil {
+		log.Printf(colors.ToRed("布隆过滤器持久化失败: %s, err: %v"), fp, err)
 	}
 }
 
