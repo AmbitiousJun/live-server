@@ -6,9 +6,8 @@ import (
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
-	"github.com/AmbitiousJun/live-server/internal/service/resolve/handler"
 	"github.com/AmbitiousJun/live-server/internal/service/secret"
-	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
+	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/gin-gonic/gin"
 )
@@ -23,18 +22,16 @@ func Listen(port int) error {
 	r.GET("/env", secret.Need(env.StoreEnv))
 	r.GET("/help", HandleHelpDoc)
 
+	// 地域白名单操作接口
+	war := r.Group("/white_area")
+	war.GET("/set", secret.Need(whitearea.SetHandler))
+	war.GET("/del", secret.Need(whitearea.DelHandler))
+
 	// 利用服务器流量代理切片
 	r.GET("/proxy_ts", resolve.ProxyTs)
 
 	// 凤凰秀授权页
 	r.GET("/feng/auth", ToFengAuthPage)
-
-	handler.Init()
-	ytdlp.Init()
-
-	if err := secret.Init(); err != nil {
-		return err
-	}
 
 	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
 	log.Printf(colors.ToYellow("查看帮助文档请到浏览器访问: :%d/help"), port)
