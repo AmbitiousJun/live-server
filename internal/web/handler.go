@@ -58,11 +58,11 @@ func HandleLive(c *gin.Context) {
 	}
 
 	if ipInfo, ok := GetIpAddrInfo(clientIp); ok {
+		clientIp += " (" + ipInfo + ")"
 		if !whitearea.Passable(ipInfo) {
 			c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 			return
 		}
-		clientIp += " (" + ipInfo + ")"
 	}
 
 	result, err := handler.Handle(resolve.HandleParams{
