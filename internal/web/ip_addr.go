@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
@@ -24,6 +25,7 @@ const (
 
 var (
 	ipAsnReg      = regexp.MustCompile(`<span class="name">归属地：</span><span class="value">(.*)<a href="[^"]*" target="_blank" rel="nofollow">(.*)</a>(.*)</span>`)
+	ipAsn1Reg     = regexp.MustCompile(`<span class="name">归属地：</span><span class="value">(.*)</span>`)
 	ipProviderReg = regexp.MustCompile(`<label><span class="name">运营商：</span><span class="value">(.*)</span></label>`)
 )
 
@@ -46,14 +48,23 @@ func init() {
 			if _, ok := ipAddrCacheMap.Load(ip); ok {
 				continue
 			}
+
 			// 只查询 ipv4 地址的信息
 			pip := net.ParseIP(ip)
 			if pip == nil || pip.To4() == nil {
 				continue
 			}
+
 			// 已经到达最大重试次数
 			tryNum++
 			if tryNum > ipMaxRetry {
+				// 10 分钟后再尝试重新开放 ip 地址获取
+				go func() {
+					ticker := time.NewTicker(time.Minute * 10)
+					defer ticker.Stop()
+					<-ticker.C
+					tryNum = 0
+				}()
 				continue
 			}
 
@@ -73,15 +84,21 @@ func init() {
 			body := string(bodyBytes)
 
 			// 利用正则表达式匹配出目标信息
-			if !ipAsnReg.MatchString(body) {
-				log.Printf(colors.ToRed("解析 ip 属地失败, 远程原始响应: %s"), body)
+			if !ipAsnReg.MatchString(body) && !ipAsn1Reg.MatchString(body) {
+				log.Printf(colors.ToRed("解析 ip 属地信息失败: %s"), ip)
 				continue
 			}
 			sb := strings.Builder{}
-			asns := ipAsnReg.FindStringSubmatch(body)
-			sb.WriteString(asns[1])
-			sb.WriteString(asns[2])
-			sb.WriteString(asns[3])
+			if ipAsnReg.MatchString(body) {
+				asns := ipAsnReg.FindStringSubmatch(body)
+				sb.WriteString(asns[1])
+				sb.WriteString(asns[2])
+				sb.WriteString(asns[3])
+			} else {
+				sb.WriteString(ipAsn1Reg.FindStringSubmatch(body)[1])
+			}
+
+			// 补充运营商信息
 			if ipProviderReg.MatchString(body) {
 				sb.WriteString("|")
 				sb.WriteString(ipProviderReg.FindStringSubmatch(body)[1])
