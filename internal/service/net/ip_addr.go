@@ -1,4 +1,4 @@
-package web
+package net
 
 import (
 	"errors"
