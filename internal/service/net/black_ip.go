@@ -1,4 +1,4 @@
-package web
+package net
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	BloomItemNums  = 1000000               // 布隆过滤器存储的元素个数
+	BloomItemNums  = 1_000_000             // 布隆过滤器存储的元素个数
 	BloomErrorRate = 0.001                 // 布隆过滤器的容错率
 	Env_BlackIps   = "bloom_black_ips"     // 存储布隆过滤器数据的环境变量值
 	BlackIpDir     = constant.Dir_DataRoot // 存储黑名单 ip 的文件路径

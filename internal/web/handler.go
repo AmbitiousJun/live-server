@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/AmbitiousJun/live-server/internal/constant"
+	"github.com/AmbitiousJun/live-server/internal/service/net"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
@@ -22,7 +23,7 @@ func HandleAddBlackIp(c *gin.Context) {
 		return
 	}
 
-	if err := AddBlackIp(ip); err != nil {
+	if err := net.AddBlackIp(ip); err != nil {
 		log.Printf("添加黑名单失败: %v", err)
 		c.String(http.StatusInternalServerError, "添加黑名单失败")
 		return
@@ -52,12 +53,12 @@ func HandleLive(c *gin.Context) {
 		log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
 	}()
 
-	if IsBlackIp(clientIp) {
+	if net.IsBlackIp(clientIp) {
 		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
 	}
 
-	if ipInfo, ok := GetIpAddrInfo(clientIp); ok {
+	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
 		clientIp += " (" + ipInfo + ")"
 		if !whitearea.Passable(ipInfo) {
 			c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")

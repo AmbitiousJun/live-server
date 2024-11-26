@@ -1,4 +1,4 @@
-package web_test
+package net_test
 
 import (
 	"io"
