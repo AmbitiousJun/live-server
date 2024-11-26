@@ -49,6 +49,7 @@ func Init() error {
 		return fmt.Errorf("错误类型: %s, 地域白名单数据格式必须为对象", whiteAreas.Type())
 	}
 
+	log.Printf(colors.ToGreen("成功加载地域白名单信息: %s"), fp)
 	return nil
 }
 
