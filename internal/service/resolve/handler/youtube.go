@@ -16,12 +16,7 @@ import (
 )
 
 const (
-
-	// Env_YoutubePlaylistCache 在环境变量中缓存 youtube 的解析列表,
-	// 避免频繁调用 yt-dlp 进行解析
-	Env_YoutubePlaylistCache = "youtube_playlist_cache"
-
-	// Env_YoutubeCustomFormatEnable 是否允许解析 FHD 格式
+	// Env_YoutubeCustomFormatEnable 是否允许解析自定义格式
 	Env_YoutubeCustomFormatEnable = "youtube_custom_format_enable"
 
 	// YoutubeResPrefix youtube 资源前缀
