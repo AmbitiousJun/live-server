@@ -173,6 +173,11 @@ func resolveIpAddr(ip string) (string, error) {
 		return "", errors.New("解析 ip 失败")
 	}
 
+	// 优先判断局域网 ip
+	if IsPrivateIp(ip) {
+		return "局域网", nil
+	}
+
 	// v4
 	if pip.To4() != nil {
 		return resolveIpv4Addr(ip)

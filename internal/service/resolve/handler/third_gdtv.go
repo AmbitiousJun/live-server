@@ -27,7 +27,7 @@ func (thirdGdtvHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	// 使用特定 UA 请求远程
 	header := make(http.Header)
 	header.Set("User-Agent", "libmpv")
-	content, err := resolve.ProxyM3U(u, header, params.ProxyTs, params.ClientIp)
+	content, err := resolve.ProxyM3U(u, header, params.ProxyTs)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
 	}
