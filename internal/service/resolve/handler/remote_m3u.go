@@ -63,16 +63,13 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: destInfo.Url}, nil
 	}
 
-	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs, params.ClientIp)
+	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
 	}
 
 	respHeader := make(http.Header)
 	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl; charset=utf-8")
-	respHeader.Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	respHeader.Set("Pragma", "no-cache")
-	respHeader.Set("Expires", "0")
 	return resolve.HandleResult{
 		Type:   resolve.ResultProxy,
 		Code:   http.StatusOK,

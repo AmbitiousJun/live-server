@@ -95,6 +95,9 @@ func HandleLive(c *gin.Context) {
 				}
 			}
 		}
+		c.Writer.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+		c.Writer.Header().Set("Expires", "0")
+		c.Writer.Header().Set("Pragma", "no-cache")
 		if result.Body != nil {
 			c.Writer.Write(result.Body)
 			c.Writer.Flush()
