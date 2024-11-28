@@ -44,7 +44,7 @@ func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: playlist}, nil
 	}
 
-	content, err := resolve.ProxyM3U(playlist, nil, params.ProxyTs)
+	content, err := resolve.ProxyM3U(playlist, nil, params.ProxyTs, params.ClientIp)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %s, err: %v", params.ChName, err)
 	}
