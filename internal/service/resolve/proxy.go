@@ -25,7 +25,7 @@ const (
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
-func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) {
+func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, clientIp string) (string, error) {
 	// 请求远程
 	finalLink, resp, err := https.Request(http.MethodGet, m3uLink, header, nil, true)
 	if err != nil {
@@ -54,9 +54,35 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 		return m3uInfo.Content(), nil
 	}
 
+	// 判断客户端是否受信任
+	isTrustedClient := true
+	if net.IsBlackIp(clientIp) {
+		isTrustedClient = false
+	}
+	ipInfo, ok := net.GetIpAddrInfo(clientIp)
+	if !ok || !whitearea.Passable(ipInfo) {
+		isTrustedClient = false
+	}
+
+	// 根据环境变量决定是否使用自定义代理接口
+	proxyHost := "/proxy_ts"
+	if isTrustedClient {
+		customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
+		if ok && customEnable == "1" {
+			customHost, ok := env.Get(Env_CustomTsProxyHostKey)
+			if ok {
+				proxyHost = customHost
+			}
+		}
+	}
+
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
-		u, _ := url.Parse("/proxy_ts")
+		u, err := url.Parse(proxyHost)
+		if err != nil {
+			log.Printf(colors.ToRed("proxy host 转换异常: %v, host: %s"), err, proxyHost)
+			return ""
+		}
 		q := u.Query()
 		q.Set("remote", base64.StdEncoding.EncodeToString([]byte(tsUrl)))
 		u.RawQuery = q.Encode()
@@ -75,30 +101,6 @@ func ProxyTs(c *gin.Context) {
 	ipInfo, ok := net.GetIpAddrInfo(clientIp)
 	if !ok || !whitearea.Passable(ipInfo) {
 		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
-		return
-	}
-
-	// 开启自定义代理, 重定向到目标地址
-	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
-	if ok && customEnable == "1" {
-		customHost, ok := env.Get(Env_CustomTsProxyHostKey)
-		if !ok {
-			log.Printf(colors.ToRed("获取不到自定义代理接口地址，请先设置环境变量 %s"), Env_CustomTsProxyHostKey)
-			c.String(http.StatusBadRequest, "代理异常，请检查日志")
-			return
-		}
-
-		cu, err := url.Parse(customHost)
-		if err != nil {
-			log.Printf(colors.ToRed("自定义代理接口解析异常: %v, customHost: [%s]"), err, customHost)
-			c.String(http.StatusBadRequest, "代理异常，请检查日志")
-			return
-		}
-
-		q := cu.Query()
-		q.Set("remote", c.Query("remote"))
-		cu.RawQuery = q.Encode()
-		c.Redirect(http.StatusFound, cu.String())
 		return
 	}
 

@@ -72,6 +72,7 @@ func HandleLive(c *gin.Context) {
 		ProxyM3U: c.Query("proxy_m3u") == "1",
 		ProxyTs:  c.Query("proxy_ts") == "1",
 		Format:   c.Query("format"),
+		ClientIp: c.ClientIP(),
 	})
 	if err != nil {
 		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)
