@@ -130,6 +130,18 @@ func HelpDoc() string {
 	sb.WriteString("\n6. 举例：/handler/third_gdtv/ch/xwpd?proxy_m3u=1")
 	sb.WriteString("\n")
 
+	// 自定义切片代理接口
+	sb.WriteString("\n自定义切片代理接口说明：")
+	sb.WriteString("\n1. 原理：借助 Cloudflare 的免费 Worker 来代理切片，避免 live-server 所在服务器的流量消耗")
+	sb.WriteString("\n2. 准备工作：(1) Cloudflare 账号 (2) Github 账号 (3) 有自定义域名托管在 Cloudflare 上（网上有教程）(4) 知道如何将 Github 仓库连接部署到 Cloudflare Pages 上（网上有教程）")
+	sb.WriteString("\n3. fork live-server 仓库到自己的 Github 账号上")
+	sb.WriteString("\n4. 在 Cloudflare Pages 上连接这个 fork 仓库进行部署")
+	sb.WriteString("\n5. 部署好之后为这个服务设置一个自定义子域名，主域名必须是托管在 Cloudflare 上的，然后等待一段时间")
+	sb.WriteString("\n6. 浏览器访问 [https://{自定义子域名}] 如果返回 [Empty remote] 表示部署成功")
+	sb.WriteString("\n7. 设置 live-server 的环境变量 [custom_ts_proxy_host] 值为 [https://{自定义的子域名}]")
+	sb.WriteString("\n8. 设置 live-server 的环境变量 [custom_ts_proxy_enable] 值为 [1] 使用自定义的代理接口")
+	sb.WriteString("\n")
+
 	// 处理器文档
 	sb.WriteString("\n处理器说明：")
 	handlerMapOpMutex.RLock()
