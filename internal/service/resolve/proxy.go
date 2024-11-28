@@ -8,12 +8,18 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/m3u8"
 	"github.com/AmbitiousJun/live-server/internal/service/net"
 	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	Env_CustomTsProxyEnableKey = "custom_ts_proxy_enable" // 是否启用自定义的代理接口
+	Env_CustomTsProxyHostKey   = "custom_ts_proxy_host"   // 自定义代理接口地址
 )
 
 // ProxyM3U 代理 m3u 地址
@@ -60,14 +66,6 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 
 // ProxyTs 代理 ts 切片
 func ProxyTs(c *gin.Context) {
-	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
-	if err != nil {
-		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
-		c.String(http.StatusBadRequest, "参数错误")
-		return
-	}
-	remote := string(remoteBytes)
-
 	// 校验客户端 ip 是否可受信任
 	clientIp := c.ClientIP()
 	if net.IsBlackIp(clientIp) {
@@ -79,6 +77,39 @@ func ProxyTs(c *gin.Context) {
 		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
 	}
+
+	// 开启自定义代理, 重定向到目标地址
+	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
+	if ok && customEnable == "1" {
+		customHost, ok := env.Get(Env_CustomTsProxyHostKey)
+		if !ok {
+			log.Printf(colors.ToRed("获取不到自定义代理接口地址，请先设置环境变量 %s"), Env_CustomTsProxyHostKey)
+			c.String(http.StatusBadRequest, "代理异常，请检查日志")
+			return
+		}
+
+		cu, err := url.Parse(customHost)
+		if err != nil {
+			log.Printf(colors.ToRed("自定义代理接口解析异常: %v, customHost: [%s]"), err, customHost)
+			c.String(http.StatusBadRequest, "代理异常，请检查日志")
+			return
+		}
+
+		q := cu.Query()
+		q.Set("remote", c.Query("remote"))
+		cu.RawQuery = q.Encode()
+		c.Redirect(http.StatusFound, cu.String())
+		return
+	}
+
+	// 解码远程 url 地址
+	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
+	if err != nil {
+		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+	remote := string(remoteBytes)
 
 	_, resp, err := https.Request(http.MethodGet, remote, nil, nil, true)
 	if err != nil {
