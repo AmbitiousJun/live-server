@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
@@ -16,7 +17,7 @@ import (
 func Listen(port int) error {
 	r := gin.Default()
 	r.GET("/handler/:handler/ch/:channel", HandleLive)
-	r.HEAD("/handler/:handler/ch/:channel", HandleLive)
+	r.HEAD("/handler/:handler/ch/:channel", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
 
 	r.GET("/black_ip", secret.Need(HandleAddBlackIp))
 	r.GET("/env", secret.Need(env.StoreEnv))
