@@ -12,6 +12,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
+	"github.com/AmbitiousJun/live-server/internal/util/urls"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,9 +35,9 @@ func HandleAddBlackIp(c *gin.Context) {
 
 // HandleLive 调用处理器处理直播请求
 func HandleLive(c *gin.Context) {
-	c.Request.URL.RawQuery = trimDollarSuffix(c.Request.URL.RawQuery)
+	c.Request.URL.RawQuery = trimDollarSuffix(urls.DecodeURI(c.Request.URL.RawQuery))
 	hName := c.Param("handler")
-	cName := trimDollarSuffix(c.Param("channel"))
+	cName := trimDollarSuffix(urls.DecodeURI(c.Param("channel")))
 	if strs.AnyEmpty(hName, cName) {
 		c.String(http.StatusBadRequest, "参数不足")
 		return

@@ -18,3 +18,24 @@ func TestAppendUrlArgs(t *testing.T) {
 	res := urls.AppendArgs(rawUrl, "ambitious", "jun", "Static", "true", "unvalid")
 	log.Println("拼接后的结果: ", res)
 }
+
+func TestDecodeURI(t *testing.T) {
+	type args struct {
+		uri string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		// TODO: Add test cases.
+		{"uri1", args{uri: "/handler/remote_m3u/ch/寰宇新聞台?url_env=aktv_m3u&proxy_m3u=1%24%E5%85%AC%E7%BD%91IPv4.AKTV"}, "/handler/remote_m3u/ch/寰宇新聞台?url_env=aktv_m3u&proxy_m3u=1$公网IPv4.AKTV"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := urls.DecodeURI(tt.args.uri); got != tt.want {
+				t.Errorf("DecodeURI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
