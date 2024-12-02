@@ -71,3 +71,12 @@ func AppendArgs(rawUrl string, kvs ...string) string {
 	u.RawQuery = q.Encode()
 	return u.String()
 }
+
+// DecodeURI 将 uri 进行 query 解码
+func DecodeURI(uri string) string {
+	res, err := url.QueryUnescape(uri)
+	if err != nil {
+		return uri
+	}
+	return res
+}
