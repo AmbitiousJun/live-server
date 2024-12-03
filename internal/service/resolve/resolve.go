@@ -113,6 +113,7 @@ func HelpDoc() string {
 
 	// 接口调用相关
 	sb.WriteString("\n接口调用说明：")
+	sb.WriteString("\n如果不熟悉接口调用, 可前往小白专用配置页进行配置: ${clientOrigin}/config?secret={程序密钥}")
 	sb.WriteString("\n1. 设置环境变量(GET) => ${clientOrigin}/env?key={变量名}&value={变量值}&secret={程序密钥}")
 	sb.WriteString("\n2. 帮助文档(GET) => ${clientOrigin}/help")
 	sb.WriteString("\n3. 调用处理器(GET) => ${clientOrigin}/handler/{处理器名}/ch/{频道名}[可选的 query 参数，如：?url_env=remote_m3u_v6]")

@@ -125,3 +125,12 @@ func ToFengAuthPage(c *gin.Context) {
 	c.Writer.Write(bytes)
 	c.Writer.Flush()
 }
+
+// ToConfigPage 跳转到配置页
+func ToConfigPage(c *gin.Context) {
+	bytes, _ := base64.StdEncoding.DecodeString(constant.ConfigPageHtml)
+	c.Header("Content-Type", "text/html")
+	c.Status(http.StatusOK)
+	c.Writer.Write(bytes)
+	c.Writer.Flush()
+}
