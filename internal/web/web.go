@@ -33,6 +33,8 @@ func Listen(port int) error {
 
 	// 凤凰秀授权页
 	r.GET("/feng/auth", secret.Need(ToFengAuthPage))
+	// 配置页
+	r.GET("/config", secret.Need(ToConfigPage))
 
 	log.Printf(colors.ToYellow("在端口【%d】上开启 http 服务..."), port)
 	log.Printf(colors.ToYellow("查看帮助文档请到浏览器访问: :%d/help"), port)

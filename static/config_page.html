@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>live-server 配置页</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .page-container {
+        padding: 20px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <h2>live-server 配置页</h2>
+
+      <!-- 展示用户传递的程序密钥 -->
+      <div class="mb-3 row secret-wrap">
+        <label class="col-sm-1 col-form-label">程序密钥：</label>
+        <div class="col-sm-11">
+          <input class="form-control secret" type="text" disabled />
+        </div>
+      </div>
+
+      <!-- 环境变量 -->
+      <div class="env-wrap">
+        <h3>环境变量</h3>
+        <div class="mb-3 row">
+          <div class="col-sm-5">
+            <input
+              class="form-control env-key"
+              type="text"
+              placeholder="请输入 key, 如: feng_token"
+            />
+          </div>
+          <div class="col-sm-5">
+            <input
+              class="form-control env-value"
+              type="text"
+              placeholder="请输入 value"
+            />
+          </div>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-primary" onclick="setEnv()">
+              添 加
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 黑名单 -->
+      <div class="black-ip-wrap">
+        <h3>黑名单</h3>
+        <div class="mb-3 row">
+          <div class="col-sm-10">
+            <input
+              class="form-control black-ip"
+              type="text"
+              placeholder="请输入要加入黑名单的 ip, 如: 1.1.1.1"
+            />
+          </div>
+          <div class="col-sm-2">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="setBlackIp()"
+            >
+              添 加
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 地域白名单 -->
+      <div class="white-area-wrap">
+        <h3>地域白名单</h3>
+        <div class="mb-3 row">
+          <div class="col-sm-8">
+            <input
+              class="form-control white-area"
+              type="text"
+              placeholder="请输入要加入白名单的地域, 如: 广东/佛山/南海"
+            />
+          </div>
+          <div class="col-sm-4">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="setWhiteArea('set')"
+            >
+              添 加
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="setWhiteArea('del')"
+            >
+              移 除
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    // 获取基本参数
+    const getBaseParams = () => {
+      const secret = new URL(window.location.href).searchParams.get("secret");
+      return {
+        secret, // 程序密钥
+        host: "", // 发送请求的主机地址
+      };
+    };
+
+    window.onload = () => {
+      // 设置程序密钥
+      const { secret } = getBaseParams();
+      document.querySelector(".page-container .secret").value = secret;
+    };
+
+    // 获取输入框的值
+    const getInputValue = (selector = "") => {
+      return (document.querySelector(selector).value || "").trim();
+    };
+
+    // GET 请求指定地址
+    const fetchUrl = (
+      url = "",
+      successFunc = () => {},
+      errorFunc = (err) => {}
+    ) => {
+      fetch(url)
+        .then((res) => {
+          if (res.ok) {
+            return successFunc();
+          }
+          errorFunc(res.statusText);
+        })
+        .catch((err) => {
+          errorFunc(err);
+        });
+    };
+
+    // 设置环境变量
+    const setEnv = () => {
+      const envKey = getInputValue(".env-wrap .env-key");
+      const envValue = getInputValue(".env-wrap .env-value");
+      if (envKey === "" || envValue === "") {
+        return alert("输入参数不能为空");
+      }
+
+      const { secret, host } = getBaseParams();
+      const url = `${host}/env?key=${envKey}&value=${envValue}&secret=${secret}`;
+      fetchUrl(
+        url,
+        () => alert("添加成功"),
+        (err) => alert(`添加失败: ${err}`)
+      );
+    };
+
+    // 设置黑名单 ip
+    const setBlackIp = () => {
+      const blackIp = getInputValue(".black-ip-wrap .black-ip");
+      if (blackIp === "") {
+        return alert("参数不能为空");
+      }
+      const { secret, host } = getBaseParams();
+      const url = `${host}/black_ip?ip=${blackIp}&secret=${secret}`;
+      fetchUrl(
+        url,
+        () => alert("添加成功"),
+        (err) => alert(`添加失败: ${err}`)
+      );
+    };
+
+    // 设置地域白名单
+    const setWhiteArea = (action = "set") => {
+      const whiteArea = getInputValue(".white-area-wrap .white-area");
+      if (whiteArea === "") {
+        return alert("输入参数不能为空");
+      }
+      const actionTip = action === "set" ? "添加" : "移除";
+      const { secret, host } = getBaseParams();
+      const url = `${host}/white_area/${action}?area=${whiteArea}&secret=${secret}`;
+      fetchUrl(
+        url,
+        () => alert(`${actionTip}成功`),
+        (err) => alert(`${actionTip}失败: ${err}`)
+      );
+    };
+  </script>
+</html>
