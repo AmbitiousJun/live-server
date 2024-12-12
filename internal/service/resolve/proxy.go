@@ -21,6 +21,7 @@ import (
 const (
 	Env_CustomTsProxyEnableKey = "custom_ts_proxy_enable" // 是否启用自定义的代理接口
 	Env_CustomTsProxyHostKey   = "custom_ts_proxy_host"   // 自定义代理接口地址
+	DefaultProxyUA             = "libmpv"                 // 代理的默认客户端标识
 )
 
 var (
@@ -33,6 +34,14 @@ var (
 //
 // 代理成功时会返回代理后的 m3u 文本
 func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) {
+	// 设置默认的客户端标识
+	if header == nil {
+		header = make(http.Header)
+	}
+	if header.Get("User-Agent") == "" {
+		header.Set("User-Agent", DefaultProxyUA)
+	}
+
 	// 请求远程
 	finalLink, resp, err := cacheableProxyClient.Request(http.MethodGet, m3uLink, header, nil, true)
 	if err != nil {
