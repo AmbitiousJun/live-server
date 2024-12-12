@@ -85,12 +85,12 @@ func ProxyTs(c *gin.Context) {
 	// 校验客户端 ip 是否可受信任
 	clientIp := c.ClientIP()
 	if net.IsBlackIp(clientIp) {
-		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
+		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
 	}
 	ipInfo, ok := net.GetIpAddrInfo(clientIp)
 	if !ok || !whitearea.Passable(ipInfo) {
-		c.String(http.StatusForbidden, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
+		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
 	}
 
