@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/m3u8"
@@ -22,12 +23,18 @@ const (
 	Env_CustomTsProxyHostKey   = "custom_ts_proxy_host"   // 自定义代理接口地址
 )
 
+var (
+
+	// cacheableProxyClient 使用带缓存特性的 http 客户端代理 m3u
+	cacheableProxyClient = https.NewCacheClient(1000, time.Second*5)
+)
+
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
 func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) {
 	// 请求远程
-	finalLink, resp, err := https.Request(http.MethodGet, m3uLink, header, nil, true)
+	finalLink, resp, err := cacheableProxyClient.Request(http.MethodGet, m3uLink, header, nil, true)
 	if err != nil {
 		return "", fmt.Errorf("请求远程地址失败: %s, err: %v", m3uLink, err)
 	}
