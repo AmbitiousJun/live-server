@@ -23,9 +23,13 @@ export default {
       });
 
       // 返回目标 URL 的响应
+      const headers = new Headers(response.headers);
+      headers.set("Access-Control-Allow-Origin", "*");
+      headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
+      headers.set("Access-Control-Allow-Headers", "Content-Type");
       return new Response(response.body, {
         status: response.status,
-        headers: response.headers,
+        headers,
       });
     } catch (error) {
       return new Response(`Invalid remote URL: ${error.message}`, { status: 400 });
