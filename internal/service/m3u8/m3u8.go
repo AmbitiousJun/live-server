@@ -3,33 +3,45 @@ package m3u8
 import (
 	"bufio"
 	"errors"
+	"log"
+	"net/url"
 	"strings"
+
+	"github.com/AmbitiousJun/live-server/internal/util/colors"
 )
 
-// ExtractPrefix 提取 m3u 地址请求前缀
-func ExtractPrefix(url string) string {
+// ExtractUrl 提取 m3u 地址信息
+func ExtractUrl(m3uLink string) (info UrlInfo) {
+	u, err := url.Parse(m3uLink)
+	if err != nil {
+		log.Printf(colors.ToRed("解析 m3u 地址失败: %v, m3u: %s"), err, m3uLink)
+		return
+	}
+	info.Host = u.Scheme + "://" + u.Host
+
 	// 切掉 query 参数
-	qStartIdx := strings.Index(url, "?")
+	qStartIdx := strings.Index(m3uLink, "?")
 	if qStartIdx != -1 {
-		url = url[:qStartIdx]
+		m3uLink = m3uLink[:qStartIdx]
 	}
 
 	// 找到最后一个 /
-	lastSlashIdx := strings.LastIndex(url, "/")
+	lastSlashIdx := strings.LastIndex(m3uLink, "/")
 	if lastSlashIdx == -1 {
-		// 不规范的 url 地址
-		return url
+		log.Printf(colors.ToRed("url 地址缺少 / 分隔符: %s"), m3uLink)
+		return
 	}
-	return url[:lastSlashIdx]
+	info.BaseDir = strings.TrimPrefix(m3uLink[:lastSlashIdx], info.Host)
+	return
 }
 
 // ReadContent 将 m3u8 原始文件整理成 Info 信息
 //
 // 有的 m3u 切片地址是相对路径, 需要手动拼接前缀
-func ReadContent(prefix, content string) (Info, error) {
+func ReadContent(urlInfo UrlInfo, content string) (Info, error) {
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	res := Info{}
-	prefix = strings.TrimSuffix(prefix, "/")
+	urlInfo.BaseDir = strings.TrimSuffix(urlInfo.BaseDir, "/")
 
 	// 检测首行
 	if scanner.Scan() {
@@ -68,12 +80,15 @@ func ReadContent(prefix, content string) (Info, error) {
 		}
 
 		// 为切片地址补充前缀
-		secondLine := strings.TrimPrefix(scanner.Text(), prefix)
+		secondLine := scanner.Text()
 		if !strings.HasPrefix(secondLine, "http") {
-			if !strings.HasPrefix(secondLine, "/") {
-				secondLine = "/" + secondLine
+			if strings.HasPrefix(secondLine, "/") {
+				// 绝对路径
+				secondLine = urlInfo.Host + secondLine
+			} else {
+				// 相对路径
+				secondLine = urlInfo.Host + urlInfo.BaseDir + secondLine
 			}
-			secondLine = prefix + secondLine
 		}
 
 		tsInfo := TsInfo{

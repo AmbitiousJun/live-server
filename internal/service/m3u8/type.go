@@ -55,3 +55,9 @@ func (i *Info) ContentFunc(f func(tsIdx int, tsUrl string) string) string {
 func (i *Info) Content() string {
 	return i.ContentFunc(func(tsIdx int, tsUrl string) string { return tsUrl })
 }
+
+// UrlInfo m3u url 地址信息
+type UrlInfo struct {
+	Host    string // 主机地址
+	BaseDir string // url 对应资源所在的目录路径
+}
