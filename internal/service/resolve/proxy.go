@@ -60,7 +60,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 	}
 
 	// 解析 m3u
-	m3uInfo, err := m3u8.ReadContent(m3u8.ExtractPrefix(finalLink), string(bodyBytes))
+	m3uInfo, err := m3u8.ReadContent(m3u8.ExtractUrl(finalLink), string(bodyBytes))
 	if err != nil {
 		return "", fmt.Errorf("解析 m3u 失败: %s, err: %v", m3uLink, err)
 	}
