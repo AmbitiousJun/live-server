@@ -16,6 +16,7 @@ export default {
       const targetUrl = new URL(remoteUrl);
 
       // 代理请求到目标 URL
+      request.headers.set("User-Agent", "libmpv");
       const response = await fetch(targetUrl.toString(), {
         method: request.method,
         headers: request.headers,
