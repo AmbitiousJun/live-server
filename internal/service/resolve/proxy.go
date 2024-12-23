@@ -28,6 +28,9 @@ var (
 
 	// cacheableProxyClient 使用带缓存特性的 http 客户端代理 m3u
 	cacheableProxyClient = https.NewCacheClient(1000, time.Second*5)
+
+	// cacheableTsProxyClient 使用带缓存特性的 http 客户端代理 ts
+	cacheableTsProxyClient = https.NewCacheClient(100, time.Second*10)
 )
 
 // ProxyM3U 代理 m3u 地址
@@ -126,7 +129,9 @@ func ProxyTs(c *gin.Context) {
 	}
 	remote := string(remoteBytes)
 
-	_, resp, err := https.Request(http.MethodGet, remote, nil, nil, true)
+	header := make(http.Header)
+	header.Set("User-Agent", DefaultProxyUA)
+	_, resp, err := cacheableTsProxyClient.Request(http.MethodGet, remote, header, nil, true)
 	if err != nil {
 		log.Printf(colors.ToRed("代理切片失败: %v"), err)
 		c.String(http.StatusInternalServerError, "代理切片失败")
