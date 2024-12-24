@@ -147,12 +147,8 @@ func ProxyTs(c *gin.Context) {
 	}
 
 	// 设置允许缓存
-	c.Header("Cache-Control", "public, max-age=31536000")
+	resp.Header.Set("Cache-Control", "public, max-age=31536000")
 	c.Status(resp.StatusCode)
-	for key, values := range resp.Header {
-		for _, value := range values {
-			c.Header(key, value)
-		}
-	}
+	https.CloneHeader(c, resp.Header)
 	io.Copy(c.Writer, resp.Body)
 }
