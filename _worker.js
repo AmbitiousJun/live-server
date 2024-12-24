@@ -12,13 +12,10 @@ export default {
       // Base64 解码 `remote` 参数
       const remoteUrl = atob(remoteParam);
 
-      // 验证解码后的结果是否是有效 URL
-      const targetUrl = new URL(remoteUrl);
-
       // 代理请求到目标 URL
       const reqHeader = new Headers();
-      reqHeader.set("User-Agent", "libmpv");
-      const response = await fetch(targetUrl.toString(), {
+      reqHeader.set("User-Agent", "okhttp");
+      const response = await fetch(remoteUrl, {
         method: request.method,
         headers: reqHeader,
         body: request.body,
