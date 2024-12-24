@@ -29,7 +29,7 @@ func Listen(port int) error {
 	war.GET("/del", secret.Need(whitearea.DelHandler))
 
 	// 利用服务器流量代理切片
-	r.GET("/proxy_ts", resolve.ProxyTs)
+	r.GET("/proxy_ts.ts", resolve.ProxyTs)
 
 	// 凤凰秀授权页
 	r.GET("/feng/auth", secret.Need(ToFengAuthPage))

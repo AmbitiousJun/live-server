@@ -75,7 +75,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
-		u, _ := url.Parse("/proxy_ts")
+		u, _ := url.Parse("/proxy_ts.ts")
 		q := u.Query()
 		q.Set("remote", base64.StdEncoding.EncodeToString([]byte(tsUrl)))
 		u.RawQuery = q.Encode()
@@ -154,7 +154,7 @@ func ProxyTs(c *gin.Context) {
 
 	// 设置允许缓存
 	c.Header("Cache-Control", "public, max-age=31536000")
-	c.Header("Content-Type", "text/html")
+	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Length", fmt.Sprintf("%d", len(bodyBytes)))
 	c.Status(resp.StatusCode)
 	c.Writer.Write(bodyBytes)
