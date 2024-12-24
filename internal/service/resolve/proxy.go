@@ -145,14 +145,17 @@ func ProxyTs(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "代理切片失败失败")
 		return
 	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf(colors.ToRed("读取响应失败: %v"), err)
+		c.String(http.StatusInternalServerError, "代理切片失败")
+		return
+	}
 
 	// 设置允许缓存
-	resp.Header.Set("Cache-Control", "public, max-age=31536000")
-	resp.Header.Del("Expires")
-	resp.Header.Del("Last-Modified")
-	resp.Header.Del("Date")
-	resp.Header.Set("Content-Type", "text/html")
+	c.Header("Cache-Control", "public, max-age=31536000")
+	c.Header("Content-Type", "text/html")
+	c.Header("Content-Length", fmt.Sprintf("%d", len(bodyBytes)))
 	c.Status(resp.StatusCode)
-	https.CloneHeader(c, resp.Header)
-	io.Copy(c.Writer, resp.Body)
+	c.Writer.Write(bodyBytes)
 }
