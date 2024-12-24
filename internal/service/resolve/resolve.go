@@ -85,7 +85,7 @@ func GetHandler(name string) (Handler, bool) {
 // HelpDoc 输出所有解析处理器的帮助文档
 func HelpDoc() string {
 	sb := strings.Builder{}
-	version := "v1.13.6"
+	version := "v1.13.7"
 
 	// 程序说明
 	sb.WriteString("\nlive-server " + version + " 帮助文档\n")
