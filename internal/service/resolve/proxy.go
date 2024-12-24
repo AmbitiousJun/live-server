@@ -146,6 +146,8 @@ func ProxyTs(c *gin.Context) {
 		return
 	}
 
+	// 设置允许缓存
+	c.Header("Cache-Control", "public, max-age=31536000")
 	c.Status(resp.StatusCode)
 	for key, values := range resp.Header {
 		for _, value := range values {
