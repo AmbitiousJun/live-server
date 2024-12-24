@@ -75,11 +75,8 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
-		u, _ := url.Parse("/proxy_ts.ts")
-		q := u.Query()
-		q.Set("remote", base64.StdEncoding.EncodeToString([]byte(tsUrl)))
-		u.RawQuery = q.Encode()
-		return u.String()
+		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
+		return fmt.Sprintf("/proxy_ts/remote/%s/seg.ts", remoteStr)
 	}), nil
 }
 
@@ -114,14 +111,14 @@ func ProxyTs(c *gin.Context) {
 		}
 
 		q := cu.Query()
-		q.Set("remote", c.Query("remote"))
+		q.Set("remote", c.Param("remote"))
 		cu.RawQuery = q.Encode()
 		c.Redirect(http.StatusFound, cu.String())
 		return
 	}
 
 	// 解码远程 url 地址
-	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
+	remoteBytes, err := base64.StdEncoding.DecodeString(c.Param("remote"))
 	if err != nil {
 		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
 		c.String(http.StatusBadRequest, "参数错误")
@@ -154,7 +151,7 @@ func ProxyTs(c *gin.Context) {
 
 	// 设置允许缓存
 	c.Header("Cache-Control", "public, max-age=31536000")
-	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Type", "text/html; charset=utf-8")
 	c.Header("Content-Length", fmt.Sprintf("%d", len(bodyBytes)))
 	c.Status(resp.StatusCode)
 	c.Writer.Write(bodyBytes)
