@@ -170,12 +170,8 @@ func (cc *CacheClient) putCache(key string, cache httpRespCache) {
 }
 
 // getCache 获取缓存
-//
-// 为了保持较好的性能, 如果读锁获取不到, 不进行阻塞等待
 func (cc *CacheClient) getCache(key string) (httpRespCache, bool) {
-	if !cc.cacheOpMutex.TryRLock() {
-		return httpRespCache{}, false
-	}
+	cc.cacheOpMutex.RLock()
 	defer cc.cacheOpMutex.RUnlock()
 
 	if cache, ok := cc.caches[key]; ok {
