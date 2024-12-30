@@ -2,6 +2,7 @@ package https
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,10 +17,11 @@ import (
 
 // CacheClient 具有缓存功能的 http 请求客户端
 type CacheClient struct {
-	caches       map[string]httpRespCache // 存放缓存响应
-	cacheOpMutex sync.RWMutex             // 操作缓存时需要获取的锁
-	expiredTime  int64                    // 过期时间 (毫秒)
-	maxCacheNum  int                      // 最大缓存个数
+	caches      map[string]httpRespCache // 存放缓存响应
+	pendings    map[string]*requestSync  // 存放正在进行的请求
+	mu          sync.RWMutex             // 操作缓存时需要获取的锁
+	expiredTime int64                    // 过期时间 (毫秒)
+	maxCacheNum int                      // 最大缓存个数
 }
 
 // httpRespCache http 请求的响应缓存
@@ -29,6 +31,12 @@ type httpRespCache struct {
 	body      []byte
 	finalUrl  string // 记录请求重定向后的最终地址
 	timestamp int64  // 加入缓存的时间
+}
+
+// requestSync 对相同 cache key 的请求进行同步
+type requestSync struct {
+	mu   sync.Mutex
+	cond *sync.Cond
 }
 
 // NewCacheClient 初始化一个具备缓存特性的 http 客户端
@@ -45,6 +53,7 @@ func NewCacheClient(maxCacheNum int, expiredTime time.Duration) *CacheClient {
 		expiredTime: expiredTime.Milliseconds(),
 		maxCacheNum: maxCacheNum,
 		caches:      make(map[string]httpRespCache),
+		pendings:    make(map[string]*requestSync),
 	}
 
 	// 创建一个定时器, 每隔指定时间清除缓存
@@ -87,42 +96,65 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 
 	// 判断是否命中缓存
 	if cache, ok := cc.getCache(cacheKey); ok {
-		resp := new(http.Response)
-		resp.StatusCode = cache.code
-		resp.Body = io.NopCloser(bytes.NewBuffer(cache.body))
-		resp.Header = cache.header.Clone()
-		return cache.finalUrl, resp, nil
+		return cache.finalUrl, cc.useCacheResp(cache), nil
 	}
+
+	// 判断请求是否处于进行中
+	if state, ok := cc.pendingState(cacheKey); ok {
+		state.mu.Lock()
+		defer state.mu.Unlock()
+		state.cond.Wait()
+		// 再次判断缓存是否命中
+		if cache, ok := cc.getCache(cacheKey); ok {
+			return cache.finalUrl, cc.useCacheResp(cache), nil
+		}
+		return "", nil, errors.New("cache client 状态异常, 无法命中缓存")
+	}
+
+	// 标记当前请求为进行中
+	cc.markPending(cacheKey)
 
 	// 发起请求
 	finalUrl, resp, err := Request(method, url, header, io.NopCloser(bytes.NewBufferString(strBody)), autoRedirect)
+	var bodyBytes []byte
 
-	// 请求异常或者非成功响应码, 不进行进一步处理
+	// 缓存请求
+	defer func() {
+		var statusCode int
+		var respHeader http.Header
+		if resp != nil {
+			statusCode = resp.StatusCode
+			if resp.Header != nil {
+				respHeader = resp.Header.Clone()
+			}
+		}
+		cc.putCache(cacheKey, httpRespCache{
+			code:      statusCode,
+			header:    respHeader,
+			body:      bodyBytes,
+			finalUrl:  finalUrl,
+			timestamp: time.Now().UnixMilli(),
+		})
+
+		// 通知等待当前请求的其他 goroutine
+		if state, ok := cc.pendingState(cacheKey); ok {
+			state.cond.Broadcast()
+		}
+		cc.removePending(cacheKey)
+	}()
+
+	// 错误响应
 	if err != nil || !IsSuccessCode(resp.StatusCode) {
 		return finalUrl, resp, err
 	}
 
 	// 拷贝一份响应体出来
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return finalUrl, resp, fmt.Errorf("读取响应体失败: %v", err)
 	}
 	resp.Body.Close()
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-	// 拷贝响应头
-	cloneHeader := resp.Header.Clone()
-
-	// 异步进行缓存
-	go func() {
-		cc.putCache(cacheKey, httpRespCache{
-			code:      resp.StatusCode,
-			header:    cloneHeader,
-			body:      bodyBytes,
-			finalUrl:  finalUrl,
-			timestamp: time.Now().UnixMilli(),
-		})
-	}()
 
 	return finalUrl, resp, nil
 }
@@ -145,15 +177,15 @@ func (cc *CacheClient) cacheKey(url, method, body string, header http.Header, au
 
 // delCache 删除缓存
 func (cc *CacheClient) delCache(key string) {
-	cc.cacheOpMutex.Lock()
-	defer cc.cacheOpMutex.Unlock()
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
 	delete(cc.caches, key)
 }
 
 // putCache 设置缓存
 func (cc *CacheClient) putCache(key string, cache httpRespCache) {
-	cc.cacheOpMutex.Lock()
-	defer cc.cacheOpMutex.Unlock()
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
 
 	// 如果缓存有这个 key, 直接覆盖
 	if _, ok := cc.caches[key]; ok {
@@ -171,12 +203,58 @@ func (cc *CacheClient) putCache(key string, cache httpRespCache) {
 
 // getCache 获取缓存
 func (cc *CacheClient) getCache(key string) (httpRespCache, bool) {
-	cc.cacheOpMutex.RLock()
-	defer cc.cacheOpMutex.RUnlock()
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
 
 	if cache, ok := cc.caches[key]; ok {
 		return cache, true
 	}
 
 	return httpRespCache{}, false
+}
+
+// markPending 标记请求处于进行中状态
+func (cc *CacheClient) markPending(key string) {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+
+	// 判断当前是否已经是进行中状态
+	if state, ok := cc.pendings[key]; ok && state != nil {
+		return
+	}
+
+	// 创建新状态
+	state := new(requestSync)
+	state.cond = sync.NewCond(&state.mu)
+	cc.pendings[key] = state
+}
+
+// pendingState 获取请求状态
+func (cc *CacheClient) pendingState(key string) (*requestSync, bool) {
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
+
+	if state, ok := cc.pendings[key]; ok && state != nil {
+		return state, true
+	}
+
+	return nil, false
+}
+
+// removePending 移除请求进行中的状态
+func (cc *CacheClient) removePending(key string) {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+	delete(cc.pendings, key)
+}
+
+// useCacheResp 使用缓存响应
+func (cc *CacheClient) useCacheResp(cache httpRespCache) *http.Response {
+	resp := new(http.Response)
+	resp.StatusCode = cache.code
+	resp.Body = io.NopCloser(bytes.NewBuffer(cache.body))
+	if cache.header != nil {
+		resp.Header = cache.header.Clone()
+	}
+	return resp
 }
