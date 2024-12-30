@@ -99,20 +99,26 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 		return cache.finalUrl, cc.useCacheResp(cache), nil
 	}
 
-	// 判断请求是否处于进行中
-	if state, ok := cc.pendingState(cacheKey); ok {
+	// 判断并标记请求为进行中状态
+	if state, pending := cc.getOrMarkPending(cacheKey); pending {
+		// 二次检查缓存是否命中, 防止 broadcast 提前触发导致线程睡死
+		if cache, ok := cc.getCache(cacheKey); ok {
+			cc.removePending(cacheKey)
+			return cache.finalUrl, cc.useCacheResp(cache), nil
+		}
+
+		// 等待并发的同个请求执行完成
 		state.mu.Lock()
 		defer state.mu.Unlock()
 		state.cond.Wait()
+
 		// 再次判断缓存是否命中
 		if cache, ok := cc.getCache(cacheKey); ok {
+			cc.removePending(cacheKey)
 			return cache.finalUrl, cc.useCacheResp(cache), nil
 		}
 		return "", nil, errors.New("cache client 状态异常, 无法命中缓存")
 	}
-
-	// 标记当前请求为进行中
-	cc.markPending(cacheKey)
 
 	// 发起请求
 	finalUrl, resp, err := Request(method, url, header, io.NopCloser(bytes.NewBufferString(strBody)), autoRedirect)
@@ -213,22 +219,6 @@ func (cc *CacheClient) getCache(key string) (httpRespCache, bool) {
 	return httpRespCache{}, false
 }
 
-// markPending 标记请求处于进行中状态
-func (cc *CacheClient) markPending(key string) {
-	cc.mu.Lock()
-	defer cc.mu.Unlock()
-
-	// 判断当前是否已经是进行中状态
-	if state, ok := cc.pendings[key]; ok && state != nil {
-		return
-	}
-
-	// 创建新状态
-	state := new(requestSync)
-	state.cond = sync.NewCond(&state.mu)
-	cc.pendings[key] = state
-}
-
 // pendingState 获取请求状态
 func (cc *CacheClient) pendingState(key string) (*requestSync, bool) {
 	cc.mu.RLock()
@@ -239,6 +229,25 @@ func (cc *CacheClient) pendingState(key string) (*requestSync, bool) {
 	}
 
 	return nil, false
+}
+
+// getOrMarkPending 获取请求的进行中状态, 如果不存在则同时标记为进行中
+//
+// 如果请求是首次被标记为进行中状态, 第二个参数会返回 false
+func (cc *CacheClient) getOrMarkPending(key string) (*requestSync, bool) {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+
+	// 已经是进行中状态直接返回
+	if state, ok := cc.pendings[key]; ok && state != nil {
+		return state, true
+	}
+
+	// 将请求标记为进行中状态并返回
+	state := new(requestSync)
+	state.cond = sync.NewCond(&state.mu)
+	cc.pendings[key] = state
+	return state, false
 }
 
 // removePending 移除请求进行中的状态
