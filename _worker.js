@@ -15,10 +15,11 @@ export default {
       // 代理请求到目标 URL
       const reqHeader = new Headers();
       reqHeader.set("User-Agent", "okhttp");
+      const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
       const response = await fetch(remoteUrl, {
         method: request.method,
         headers: reqHeader,
-        body: request.body,
+        body,
       });
 
       // 返回目标 URL 的响应
