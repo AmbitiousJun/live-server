@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,7 +26,9 @@ var RedirectCodes = [4]int{http.StatusMovedPermanently, http.StatusFound, http.S
 func init() {
 	client = &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+			Dial:                  (&net.Dialer{Timeout: time.Minute}).Dial,
+			ResponseHeaderTimeout: time.Minute * 5,
 		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
