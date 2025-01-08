@@ -43,6 +43,9 @@ export default {
       headers.set("Access-Control-Allow-Origin", "*");
       headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
       headers.set("Access-Control-Allow-Headers", "Content-Type");
+      headers.set("Cache-Control", "max-age=3600");
+      headers.set("Last-Modified", new Date().toUTCString());
+      headers.set("Content-Type", "text/html; charset=utf-8");
 
       const proxyResponse = new Response(response.body, {
         status: response.status,
