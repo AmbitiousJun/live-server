@@ -16,8 +16,7 @@ export default {
       const cache = caches.default;
 
       // 检查缓存是否命中
-      const cacheKey = new Request(request.url, request);
-      const cachedResponse = await cache.match(cacheKey);
+      const cachedResponse = await cache.match(remoteUrl);
       if (cachedResponse) {
         console.log("Cache hit");
         return cachedResponse;
@@ -38,6 +37,10 @@ export default {
         return new Response("Failed to fetch remote URL", { status: 500 });
       }
 
+      // 将响应缓存
+      console.log("Cache miss, caching response");
+      cache.put(remoteUrl, response.clone());
+
       // 设置 CORS 头
       const headers = new Headers(response.headers);
       headers.set("Access-Control-Allow-Origin", "*");
@@ -51,10 +54,6 @@ export default {
         status: response.status,
         headers,
       });
-
-      // 将响应缓存
-      console.log("Cache miss, caching response");
-      await cache.put(cacheKey, proxyResponse.clone());
 
       return proxyResponse;
     } catch (error) {
