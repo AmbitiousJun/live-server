@@ -1,8 +1,8 @@
+name = "live-server"
+type = "javascript"
+
 # Pages 配置
 pages_build_output_dir = "."
-
-# 启用日志推送
-log_push = true
 
 [observability]
 enabled = true
