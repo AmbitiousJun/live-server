@@ -1,9 +1,3 @@
-name = "live-server"
-type = "javascript"
-
-# Pages 配置
-pages_build_output_dir = "."
-
 [observability]
 enabled = true
 head_sampling_rate = 1 # optional. default = 1.
