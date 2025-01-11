@@ -1,5 +1,5 @@
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const remoteParam = url.searchParams.get("remote");
 
@@ -10,13 +10,14 @@ export default {
 
     try {
       // Base64 解码 `remote` 参数
-      const remoteUrl = atob(remoteParam);
+      const remoteUrl = new URL(atob(remoteParam));
 
       // 获取 Cache 对象
+      const cacheKey = new Request(remoteUrl.toString(), request);
       const cache = caches.default;
 
       // 检查缓存是否命中
-      const cachedResponse = await cache.match(remoteUrl);
+      const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
         console.log("Cache hit");
         return cachedResponse;
@@ -26,7 +27,7 @@ export default {
       const reqHeader = new Headers();
       reqHeader.set("User-Agent", "okhttp");
       const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
-      const response = await fetch(remoteUrl, {
+      let response = await fetch(remoteUrl, {
         method: request.method,
         headers: reqHeader,
         body,
@@ -37,25 +38,18 @@ export default {
         return new Response("Failed to fetch remote URL", { status: 500 });
       }
 
-      // 将响应缓存
-      console.log("Cache miss, caching response");
-      cache.put(remoteUrl, response.clone());
-
+      response = new Response(response.body, response);
       // 设置 CORS 头
-      const headers = new Headers(response.headers);
-      headers.set("Access-Control-Allow-Origin", "*");
-      headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
-      headers.set("Access-Control-Allow-Headers", "Content-Type");
-      headers.set("Cache-Control", "max-age=3600");
-      headers.set("Last-Modified", new Date().toUTCString());
-      headers.set("Content-Type", "text/html; charset=utf-8");
+      response.headers.set("Access-Control-Allow-Origin", "*");
+      response.headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
+      response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+      response.headers.set("Cache-Control", "s-maxage=3600");
+      response.headers.set("Last-Modified", new Date().toUTCString());
+      response.headers.set("Content-Type", "text/html; charset=utf-8");
 
-      const proxyResponse = new Response(response.body, {
-        status: response.status,
-        headers,
-      });
-
-      return proxyResponse;
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      console.log("Cache new request");
+      return response;
     } catch (error) {
       return new Response(`Invalid remote URL: ${error.message}`, { status: 400 });
     }
