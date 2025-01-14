@@ -37,7 +37,7 @@ func HandleAddBlackIp(c *gin.Context) {
 func HandleLive(c *gin.Context) {
 	c.Request.URL.RawQuery = trimDollarSuffix(urls.DecodeURI(c.Request.URL.RawQuery))
 	hName := c.Param("handler")
-	cName := trimDollarSuffix(urls.DecodeURI(c.Param("channel")))
+	cName := trimDollarSuffix(c.Param("channel"))
 	if strs.AnyEmpty(hName, cName) {
 		c.String(http.StatusBadRequest, "参数不足")
 		return
