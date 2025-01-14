@@ -124,6 +124,11 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 	finalUrl, resp, err := Request(method, url, header, io.NopCloser(bytes.NewBufferString(strBody)), autoRedirect)
 	var bodyBytes []byte
 
+	// 错误响应
+	if err != nil || !IsSuccessCode(resp.StatusCode) {
+		return finalUrl, resp, err
+	}
+
 	// 缓存请求
 	defer func() {
 		var statusCode int
@@ -148,11 +153,6 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 		}
 		cc.removePending(cacheKey)
 	}()
-
-	// 错误响应
-	if err != nil || !IsSuccessCode(resp.StatusCode) {
-		return finalUrl, resp, err
-	}
 
 	// 拷贝一份响应体出来
 	bodyBytes, err = io.ReadAll(resp.Body)
