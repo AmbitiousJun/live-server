@@ -76,7 +76,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
-		return fmt.Sprintf("/proxy_ts/remote/%s/seg.ts", remoteStr)
+		return fmt.Sprintf("/proxy.ts?remote=%s", remoteStr)
 	}), nil
 }
 
@@ -111,14 +111,14 @@ func ProxyTs(c *gin.Context) {
 		}
 
 		q := cu.Query()
-		q.Set("remote", c.Param("remote"))
+		q.Set("remote", c.Query("remote"))
 		cu.RawQuery = q.Encode()
 		c.Redirect(http.StatusFound, cu.String())
 		return
 	}
 
 	// 解码远程 url 地址
-	remoteBytes, err := base64.StdEncoding.DecodeString(c.Param("remote"))
+	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
 	if err != nil {
 		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
 		c.String(http.StatusBadRequest, "参数错误")
