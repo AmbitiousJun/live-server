@@ -12,7 +12,7 @@ var (
 	TvgNameReg    = regexp.MustCompile(`tvg-name="([^"]*)"`)
 	TvgLogoReg    = regexp.MustCompile(`tvg-logo="([^"]*)"`)
 	GroupTitleReg = regexp.MustCompile(`group-title="([^"]*)"`)
-	CustomNameReg = regexp.MustCompile(`,\s*(.*)$`)
+	CustomNameReg = regexp.MustCompile(`,\s*([^,]*)$`)
 )
 
 // ReadContent 将 m3u8 原始文件整理成 Info 信息
@@ -39,22 +39,14 @@ func ReadContent(content string) (map[string]Info, error) {
 		}
 		info := readChannelInfo(firstLine)
 
-		mapKey := info.TvgName
-		if mapKey == "" {
-			mapKey = info.CustomName
-		}
-		if mapKey == "" {
-			mapKey = info.TvgId
-		}
-		if mapKey == "" {
-			continue
-		}
-
 		if !scanner.Scan() {
 			continue
 		}
 		info.Url = scanner.Text()
-		res[mapKey] = info
+
+		res[info.TvgName] = info
+		res[info.TvgId] = info
+		res[info.CustomName] = info
 	}
 
 	updateCache(content, res)
