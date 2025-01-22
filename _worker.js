@@ -51,9 +51,9 @@ export default {
         newResponse.headers.set("Content-Encoding", response.headers.get("Content-Encoding"));
       }
 
-      cache.put(cacheKey, response.clone());
+      cache.put(cacheKey, newResponse.clone());
       console.log("Cache new request");
-      return response;
+      return newResponse;
     } catch (error) {
       return new Response(`Invalid remote URL: ${error.message}`, { status: 400 });
     }
