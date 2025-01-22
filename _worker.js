@@ -51,7 +51,7 @@ export default {
         newResponse.headers.set("Content-Encoding", response.headers.get("Content-Encoding"));
       }
 
-      cache.put(cacheKey, newResponse.clone());
+      ctx.waitUntil(cache.put(cacheKey, newResponse.clone()));
       console.log("Cache new request");
       return newResponse;
     } catch (error) {
