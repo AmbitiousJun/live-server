@@ -26,8 +26,9 @@ export default {
       // 未命中缓存，发起代理请求
       const reqHeader = new Headers();
       reqHeader.set("User-Agent", "okhttp");
+      reqHeader.set("Accept-Encoding", request.headers.get("Accept-Encoding") || "");
       const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
-      let response = await fetch(remoteUrl, {
+      const response = await fetch(remoteUrl, {
         method: request.method,
         headers: reqHeader,
         body,
@@ -38,16 +39,19 @@ export default {
         return new Response("Failed to fetch remote URL", { status: 500 });
       }
 
-      response = new Response(response.body, response);
+      const newResponse = new Response(response.body, response);
       // 设置 CORS 头
-      response.headers.set("Access-Control-Allow-Origin", "*");
-      response.headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
-      response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-      response.headers.set("Cache-Control", "s-maxage=3600");
-      response.headers.set("Last-Modified", new Date().toUTCString());
-      response.headers.set("Content-Type", "text/html; charset=utf-8");
+      newResponse.headers.set("Access-Control-Allow-Origin", "*");
+      newResponse.headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
+      newResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
+      newResponse.headers.set("Cache-Control", "s-maxage=3600");
+      newResponse.headers.set("Last-Modified", new Date().toUTCString());
+      newResponse.headers.set("Content-Type", "text/html; charset=utf-8");
+      if (response.headers.get("Content-Encoding")) {
+        newResponse.headers.set("Content-Encoding", response.headers.get("Content-Encoding"));
+      }
 
-      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      cache.put(cacheKey, response.clone());
       console.log("Cache new request");
       return response;
     } catch (error) {
