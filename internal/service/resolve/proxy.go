@@ -73,10 +73,16 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 		return m3uInfo.Content(), nil
 	}
 
+	basePath := "/proxy.ts"
+	if customHost, ok := getCustomTsProxyHost(); ok {
+		basePath = customHost
+	}
+	basePath += "?remote="
+
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
-		return fmt.Sprintf("/proxy.ts?remote=%s", remoteStr)
+		return basePath + remoteStr
 	}), nil
 }
 
@@ -94,27 +100,17 @@ func ProxyTs(c *gin.Context) {
 		return
 	}
 
-	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
-	if ok && customEnable == "1" {
-		customHost, ok := env.Get(Env_CustomTsProxyHostKey)
-		if !ok {
-			log.Printf(colors.ToRed("代理失败，请先设置自定义代理接口环境变量: %s"), Env_CustomTsProxyHostKey)
-			c.String(http.StatusBadRequest, "代理失败，请检查日志")
-			return
-		}
-
+	if customHost, ok := getCustomTsProxyHost(); ok {
 		cu, err := url.Parse(customHost)
 		if err != nil {
 			log.Printf(colors.ToRed("代理失败，自定义代理接口无法解析: %s => %v"), customHost, err)
 			c.String(http.StatusBadRequest, "代理失败，请检查日志")
 			return
 		}
-
 		q := cu.Query()
 		q.Set("remote", c.Query("remote"))
 		cu.RawQuery = q.Encode()
 		c.Redirect(http.StatusFound, cu.String())
-		return
 	}
 
 	// 解码远程 url 地址
@@ -149,4 +145,18 @@ func ProxyTs(c *gin.Context) {
 	c.Header("Content-Type", "text/html; charset=utf-8")
 	c.Status(resp.StatusCode)
 	io.Copy(c.Writer, resp.Body)
+}
+
+// getCustomTsProxyHost 获取用户配置的自定义切片代理地址, 如果未开启自定义代理, 则返回 false
+func getCustomTsProxyHost() (string, bool) {
+	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
+	if !ok || customEnable != "1" {
+		return "", false
+	}
+
+	customHost, ok := env.Get(Env_CustomTsProxyHostKey)
+	if !ok {
+		return "", false
+	}
+	return customHost, true
 }
