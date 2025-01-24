@@ -11,6 +11,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/whitearea"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
+	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
 	"github.com/AmbitiousJun/live-server/internal/util/urls"
 	"github.com/gin-gonic/gin"
@@ -69,12 +70,13 @@ func HandleLive(c *gin.Context) {
 	}
 
 	result, err := handler.Handle(resolve.HandleParams{
-		ChName:   cName,
-		UrlEnv:   c.Query("url_env"),
-		ProxyM3U: c.Query("proxy_m3u") == "1",
-		ProxyTs:  c.Query("proxy_ts") == "1",
-		Format:   c.Query("format"),
-		ClientIp: c.ClientIP(),
+		ChName:     cName,
+		UrlEnv:     c.Query("url_env"),
+		ProxyM3U:   c.Query("proxy_m3u") == "1",
+		ProxyTs:    c.Query("proxy_ts") == "1",
+		Format:     c.Query("format"),
+		ClientIp:   c.ClientIP(),
+		ClientHost: https.ClientRequestHost(c),
 	})
 	if err != nil {
 		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)

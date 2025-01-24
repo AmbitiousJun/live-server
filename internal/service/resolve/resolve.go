@@ -17,12 +17,13 @@ var handlerMapOpMutex = sync.RWMutex{}
 
 // HandleParams 处理参数
 type HandleParams struct {
-	ChName   string // 频道简称
-	UrlEnv   string // 存储远程地址的环境变量名
-	ProxyM3U bool   // 是否代理 m3u
-	ProxyTs  bool   // 是否代理 ts
-	Format   string // 要处理的直播格式
-	ClientIp string // 客户端 ip
+	ChName     string // 频道简称
+	UrlEnv     string // 存储远程地址的环境变量名
+	ProxyM3U   bool   // 是否代理 m3u
+	ProxyTs    bool   // 是否代理 ts
+	Format     string // 要处理的直播格式
+	ClientIp   string // 客户端 ip
+	ClientHost string // 客户端请求的主机前缀
 }
 
 // ResultType 处理器的处理结果

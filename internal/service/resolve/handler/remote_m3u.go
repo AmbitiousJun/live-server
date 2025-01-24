@@ -63,7 +63,7 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: destInfo.Url}, nil
 	}
 
-	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs)
+	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs, params.ClientHost)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
 	}
