@@ -36,7 +36,7 @@ var (
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
-func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) {
+func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, clientHost string) (string, error) {
 	// 设置默认的客户端标识
 	if header == nil {
 		header = make(http.Header)
@@ -73,7 +73,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool) (string, error) 
 		return m3uInfo.Content(), nil
 	}
 
-	basePath := "/proxy.ts"
+	basePath := clientHost + "/proxy.ts"
 	if customHost, ok := getCustomTsProxyHost(); ok {
 		basePath = customHost
 	}
