@@ -25,8 +25,9 @@ export default {
 
       // 未命中缓存，发起代理请求
       const reqHeader = new Headers();
-      reqHeader.set("User-Agent", "okhttp");
+      reqHeader.set("User-Agent", "libmpv");
       reqHeader.set("Accept-Encoding", request.headers.get("Accept-Encoding") || "");
+      console.log(`Client Accept-Encoding header: ${reqHeader.get("Accept-Encoding")}`);
       const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
       const response = await fetch(remoteUrl, {
         method: request.method,
@@ -44,19 +45,23 @@ export default {
       newResponse.headers.set("Access-Control-Allow-Origin", "*");
       newResponse.headers.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
       newResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
-      newResponse.headers.set("Cache-Control", "s-maxage=3600");
+      newResponse.headers.set("Cache-Control", "s-maxage=300");
       newResponse.headers.set("Last-Modified", new Date().toUTCString());
-      newResponse.headers.set("Content-Type", "text/html; charset=utf-8");
+      newResponse.headers.set("Content-Type", response.headers.get("Content-Type"));
       if (response.headers.get("Content-Encoding")) {
         newResponse.headers.set("Content-Encoding", response.headers.get("Content-Encoding"));
+        console.log(`Server Content-Encoding header: ${newResponse.headers.get("Accept-Encoding")}`);
       }
 
       ctx.waitUntil(cache.put(cacheKey, newResponse.clone()));
+      // cache.put(cacheKey, newResponse.clone());
       console.log("Cache new request");
       return newResponse;
     } catch (error) {
+      console.error(`代理异常：${error}`);
       return new Response(`Invalid remote URL: ${error.message}`, { status: 400 });
     }
   },
 };
+
 
