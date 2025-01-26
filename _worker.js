@@ -47,7 +47,7 @@ export default {
       newResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
       newResponse.headers.set("Cache-Control", "s-maxage=300");
       newResponse.headers.set("Last-Modified", new Date().toUTCString());
-      newResponse.headers.set("Content-Type", response.headers.get("Content-Type"));
+      newResponse.headers.set("Content-Type", "text/html");
       if (response.headers.get("Content-Encoding")) {
         newResponse.headers.set("Content-Encoding", response.headers.get("Content-Encoding"));
         console.log(`Server Content-Encoding header: ${newResponse.headers.get("Accept-Encoding")}`);
