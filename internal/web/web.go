@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/secret"
@@ -22,6 +23,7 @@ func Listen(port int) error {
 	r.GET("/black_ip", secret.Need(HandleAddBlackIp))
 	r.GET("/env", secret.Need(env.StoreEnv))
 	r.GET("/help", HandleHelpDoc)
+	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "live-server@"+constant.Version) })
 
 	// 地域白名单操作接口
 	war := r.Group("/white_area")
