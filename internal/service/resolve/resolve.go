@@ -97,13 +97,13 @@ func HelpDoc() string {
 	version := "v1.13.15"
 
 	// 程序说明
-	sb.WriteString("\nlive-server " + version + " 帮助文档\n")
+	sb.WriteString("\n<strong>live-server " + version + " 帮助文档</strong>\n")
 	sb.WriteString("\n仓库地址：https://github.com/AmbitiousJun/live-server")
 	sb.WriteString("\n项目说明：本项目仅限个人测试使用，切勿大肆传播！！")
 	sb.WriteString("\n")
 
 	// 程序密钥相关
-	sb.WriteString("\n程序密钥说明：")
+	sb.WriteString("\n<strong>程序密钥说明：</strong>")
 	sb.WriteString("\n1. 每次启动运行时，会初始化一次密钥并在日志中输出，注意查看")
 	sb.WriteString("\n2. 程序密钥会保存在【数据目录/secret.txt】文件中，初始化时如果文件不存在会自动生成一个随机密钥")
 	sb.WriteString("\n3. 可通过修改 secret.txt 文件自定义密钥")
@@ -111,7 +111,7 @@ func HelpDoc() string {
 	sb.WriteString("\n")
 
 	// 地域白名单相关
-	sb.WriteString("\n地域白名单说明：")
+	sb.WriteString("\n<strong>地域白名单说明：</strong>")
 	sb.WriteString("\n1. 如果服务部署在公网上，推荐使用这个功能")
 	sb.WriteString("\n2. 如果没有设置过白名单，默认允许所有 ip 进行访问")
 	sb.WriteString("\n3. 功能生效的前提是程序能正确获取到客户端 ip 的归属地信息（可以在运行日志中加以确认）")
@@ -121,7 +121,7 @@ func HelpDoc() string {
 	sb.WriteString("\n")
 
 	// 接口调用相关
-	sb.WriteString("\n接口调用说明：")
+	sb.WriteString("\n<strong>接口调用说明：</strong>")
 	sb.WriteString("\n如果不熟悉接口调用, 可前往小白专用配置页进行配置: ${clientOrigin}/config?secret={程序密钥}")
 	sb.WriteString("\n1. 设置环境变量(GET) => ${clientOrigin}/env?key={变量名}&value={变量值}&secret={程序密钥}")
 	sb.WriteString("\n2. 帮助文档(GET) => ${clientOrigin}/help")
@@ -132,17 +132,18 @@ func HelpDoc() string {
 	sb.WriteString("\n")
 
 	// 代理参数
-	sb.WriteString("\n代理参数说明：")
+	sb.WriteString("\n<strong>代理参数说明：</strong>")
 	sb.WriteString("\n1. 如果处理器支持 M3U 代理, 则可以在调用处理器时传递代理参数进行代理")
 	sb.WriteString("\n2. 代理参数 ①：proxy_m3u => 是否代理 m3u，传递 1 则开启代理，其他值无效")
 	sb.WriteString("\n3. 代理参数 ②：proxy_ts  => 是否代理 ts 切片，传递 1 则开启代理，其他值无效")
-	sb.WriteString("\n4. 开启切片代理时，会消耗服务器流量")
-	sb.WriteString("\n5. 代理功能可以正常使用的前提是服务器的网络环境是能够和直播源进行连通的")
-	sb.WriteString("\n6. 举例：/handler/third_gdtv/ch/xwpd?proxy_m3u=1")
+	sb.WriteString("\n4. 代理参数 ③：ts_proxy_mode => ts 代理模式，传递 custom 则使用自定义的代理接口，传递 local 则使用本地代理，传递该参数时会覆盖全局配置")
+	sb.WriteString("\n5. 开启切片代理时，会消耗服务器流量")
+	sb.WriteString("\n6. 代理功能可以正常使用的前提是服务器的网络环境是能够和直播源进行连通的")
+	sb.WriteString("\n7. 举例：/handler/third_gdtv/ch/xwpd?proxy_m3u=1")
 	sb.WriteString("\n")
 
 	// 自定义切片代理接口
-	sb.WriteString("\n自定义切片代理接口说明：")
+	sb.WriteString("\n<strong>自定义切片代理接口说明：</strong>")
 	sb.WriteString("\n1. 原理：借助 Cloudflare 的免费 Worker 来代理切片，避免 live-server 所在服务器的流量消耗")
 	sb.WriteString("\n2. 准备工作：(1) Cloudflare 账号 (2) Github 账号 (3) 有自定义域名托管在 Cloudflare 上（网上有教程）(4) 知道如何将 Github 仓库连接部署到 Cloudflare Pages 上（网上有教程）")
 	sb.WriteString("\n3. fork live-server 仓库到自己的 Github 账号上")
@@ -154,7 +155,7 @@ func HelpDoc() string {
 	sb.WriteString("\n")
 
 	// 处理器文档
-	sb.WriteString("\n处理器说明：")
+	sb.WriteString("\n<strong>处理器说明：</strong>")
 	handlerMapOpMutex.RLock()
 	defer handlerMapOpMutex.RUnlock()
 	for name, handler := range handlerMap {
