@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -40,23 +39,7 @@ func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
 	}
 
-	if !params.ProxyM3U {
-		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: playlist}, nil
-	}
-
-	content, err := resolve.ProxyM3U(playlist, nil, params.ProxyTs, params.ClientHost)
-	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %s, err: %v", params.ChName, err)
-	}
-
-	respHeader := make(http.Header)
-	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl")
-	return resolve.HandleResult{
-		Type:   resolve.ResultProxy,
-		Code:   http.StatusOK,
-		Header: respHeader,
-		Body:   []byte(content),
-	}, nil
+	return resolve.M3U8Result(playlist, params)
 }
 
 // Name 处理器名称

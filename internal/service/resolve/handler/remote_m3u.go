@@ -58,24 +58,7 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 		return resolve.HandleResult{}, fmt.Errorf("匹配频道名称失败: %s, 请检查远程地址是否有效", params.ChName)
 	}
 
-	// 如果无需代理, 直接重定向
-	if !params.ProxyM3U {
-		return resolve.HandleResult{Type: resolve.ResultRedirect, Url: destInfo.Url}, nil
-	}
-
-	content, err := resolve.ProxyM3U(destInfo.Url, nil, params.ProxyTs, params.ClientHost)
-	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
-	}
-
-	respHeader := make(http.Header)
-	respHeader.Set("Content-Type", "application/vnd.apple.mpegurl; charset=utf-8")
-	return resolve.HandleResult{
-		Type:   resolve.ResultProxy,
-		Code:   http.StatusOK,
-		Body:   []byte(content),
-		Header: respHeader,
-	}, nil
+	return resolve.M3U8Result(destInfo.Url, params)
 }
 
 // HelpDoc 处理器说明文档

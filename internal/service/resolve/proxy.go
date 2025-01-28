@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
@@ -36,7 +35,7 @@ var (
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
-func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, clientHost string) (string, error) {
+func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsProxyMode, clientHost string) (string, error) {
 	// 设置默认的客户端标识
 	if header == nil {
 		header = make(http.Header)
@@ -74,7 +73,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, clientHost strin
 	}
 
 	basePath := clientHost + "/proxy.ts"
-	if customHost, ok := getCustomTsProxyHost(); ok {
+	if customHost, ok := getCustomTsProxyHost(tsProxyMode); ok {
 		basePath = customHost
 	}
 	basePath += "?remote="
@@ -98,19 +97,6 @@ func ProxyTs(c *gin.Context) {
 	if !ok || !whitearea.Passable(ipInfo) {
 		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
-	}
-
-	if customHost, ok := getCustomTsProxyHost(); ok {
-		cu, err := url.Parse(customHost)
-		if err != nil {
-			log.Printf(colors.ToRed("代理失败，自定义代理接口无法解析: %s => %v"), customHost, err)
-			c.String(http.StatusBadRequest, "代理失败，请检查日志")
-			return
-		}
-		q := cu.Query()
-		q.Set("remote", c.Query("remote"))
-		cu.RawQuery = q.Encode()
-		c.Redirect(http.StatusFound, cu.String())
 	}
 
 	// 解码远程 url 地址
@@ -148,14 +134,21 @@ func ProxyTs(c *gin.Context) {
 }
 
 // getCustomTsProxyHost 获取用户配置的自定义切片代理地址, 如果未开启自定义代理, 则返回 false
-func getCustomTsProxyHost() (string, bool) {
-	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
-	if !ok || customEnable != "1" {
+func getCustomTsProxyHost(proxyMode TsProxyMode) (string, bool) {
+	if proxyMode == ModeLocal {
 		return "", false
 	}
 
 	customHost, ok := env.Get(Env_CustomTsProxyHostKey)
+	if proxyMode == ModeCustom {
+		return customHost, true
+	}
 	if !ok {
+		return "", false
+	}
+
+	customEnable, ok := env.Get(Env_CustomTsProxyEnableKey)
+	if !ok || customEnable != "1" {
 		return "", false
 	}
 	return customHost, true
