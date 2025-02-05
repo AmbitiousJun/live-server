@@ -124,12 +124,16 @@ func NewYoutubeCacher() *youtubeCacher {
 	yc.preCacheReqChan = make(chan youtubePreCacheRequest, 100)
 
 	// 每隔 30 分钟维护一次内存
-	ticker := time.NewTicker(time.Minute * 30)
+	removeTicker := time.NewTicker(time.Minute * 30)
+	// 每隔 2 小时刷新一次所有频道地址
+	refreshTicker := time.NewTicker(time.Hour * 2)
 	go func() {
 		for {
 			select {
-			case <-ticker.C:
-				yc.UpdateAll()
+			case <-removeTicker.C:
+				yc.UpdateAll(true)
+			case <-refreshTicker.C:
+				yc.UpdateAll(false)
 			case req := <-yc.preCacheReqChan:
 				if req.resChan == nil {
 					break
@@ -207,7 +211,8 @@ func (yc *youtubeCacher) GetM3U(chId, formatCode string) (m3u string, err error)
 }
 
 // UpdateAll 更新缓存, 同时淘汰太长时间未读的列表
-func (yc *youtubeCacher) UpdateAll() {
+// removeOnly 参数控制是否只移除过期缓存
+func (yc *youtubeCacher) UpdateAll(removeOnly bool) {
 	successCnt, failCnt, removeCnt := 0, 0, 0
 	defer func() {
 		if successCnt <= 0 && failCnt <= 0 && removeCnt <= 0 {
@@ -222,6 +227,10 @@ func (yc *youtubeCacher) UpdateAll() {
 			// 缓存过期
 			toRemoves = append(toRemoves, key)
 			removeCnt++
+			continue
+		}
+
+		if removeOnly {
 			continue
 		}
 
