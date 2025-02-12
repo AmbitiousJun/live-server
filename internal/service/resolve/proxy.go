@@ -29,7 +29,7 @@ var (
 	cacheableProxyClient = https.NewCacheClient(1000, time.Second*5)
 
 	// cacheableTsProxyClient 使用带缓存特性的 http 客户端代理 ts
-	cacheableTsProxyClient = https.NewCacheClient(50, time.Second*20)
+	cacheableTsProxyClient = https.NewCacheClient(50, time.Second*30)
 )
 
 // ProxyM3U 代理 m3u 地址

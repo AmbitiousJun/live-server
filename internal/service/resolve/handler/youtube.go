@@ -125,8 +125,8 @@ func NewYoutubeCacher() *youtubeCacher {
 
 	// 每隔 30 分钟维护一次内存
 	removeTicker := time.NewTicker(time.Minute * 30)
-	// 每隔 2 小时刷新一次所有频道地址
-	refreshTicker := time.NewTicker(time.Hour * 2)
+	// 每隔 1.5 小时刷新一次所有频道地址
+	refreshTicker := time.NewTicker(time.Hour + time.Minute*30)
 	go func() {
 		for {
 			select {
