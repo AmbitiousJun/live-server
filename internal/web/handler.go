@@ -50,19 +50,14 @@ func HandleLive(c *gin.Context) {
 		return
 	}
 
-	ua := c.Request.Header.Get("User-Agent")
 	clientIp := c.ClientIP()
-	defer func() {
-		log.Printf(colors.ToBlue("Client-IP: %s, User-Agent: %s"), clientIp, ua)
-	}()
-
 	if net.IsBlackIp(clientIp) {
 		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 		return
 	}
 
 	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
-		clientIp += " (" + ipInfo + ")"
+		c.Set(constant.Gin_IpAddrInfoKey, ipInfo)
 		if !whitearea.Passable(ipInfo) {
 			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
 			return
