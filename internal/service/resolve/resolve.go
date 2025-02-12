@@ -122,13 +122,7 @@ func HelpDoc() string {
 
 	// 接口调用相关
 	sb.WriteString("\n<strong>接口调用说明：</strong>")
-	sb.WriteString("\n如果不熟悉接口调用, 可前往小白专用配置页进行配置: ${clientOrigin}/config?secret={程序密钥}")
-	sb.WriteString("\n1. 设置环境变量(GET) => ${clientOrigin}/env?key={变量名}&value={变量值}&secret={程序密钥}")
-	sb.WriteString("\n2. 帮助文档(GET) => ${clientOrigin}/help")
-	sb.WriteString("\n3. 调用处理器(GET) => ${clientOrigin}/handler/{处理器名}/ch/{频道名}[可选的 query 参数，如：?url_env=remote_m3u_v6]")
-	sb.WriteString("\n4. ip 黑名单(GET) => ${clientOrigin}/black_ip?ip={要加入黑名单的地址}&secret={程序密钥}")
-	sb.WriteString("\n5. 设置地域白名单(GET) => ${clientOrigin}/white_area/set?area={要加入白名单的地域}&secret={程序密钥}")
-	sb.WriteString("\n6. 移除地域白名单(GET) => ${clientOrigin}/white_area/del?area={要移除白名单的地域}&secret={程序密钥}")
+	sb.WriteString("\n请前往配置页进行配置: <a target=\"_blank\" href=\"${clientOrigin}/config?secret={程序密钥}\">${clientOrigin}/config?secret={程序密钥}</a>")
 	sb.WriteString("\n")
 
 	// 代理参数

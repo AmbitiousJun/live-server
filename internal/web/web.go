@@ -21,7 +21,7 @@ func Listen(port int) error {
 	r.HEAD("/handler/:handler/ch/:channel", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
 
 	r.GET("/black_ip", secret.Need(HandleAddBlackIp))
-	r.GET("/env", secret.Need(env.StoreEnv))
+	r.POST("/env", secret.Need(env.StoreEnv))
 	r.GET("/help", HandleHelpDoc)
 	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "live-server@"+constant.Version) })
 
