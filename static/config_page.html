@@ -156,12 +156,24 @@
       }
 
       const { secret, host } = getBaseParams();
-      const url = `${host}/env?key=${envKey}&value=${envValue}&secret=${secret}`;
-      fetchUrl(
-        url,
-        () => alert("添加成功"),
-        (err) => alert(`添加失败: ${err}`)
-      );
+      const url = `${host}/env?secret=${secret}`;
+      const formData = new FormData();
+      formData.append("key", envKey);
+      formData.append("value", envValue);
+
+      fetch(url, {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => {
+          if (res.ok) {
+            return alert("添加成功");
+          }
+          alert(`添加失败: ${res.statusText}`);
+        })
+        .catch((err) => {
+          alert(`添加失败: ${err}`);
+        });
     };
 
     // 设置黑名单 ip
