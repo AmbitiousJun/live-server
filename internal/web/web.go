@@ -22,6 +22,7 @@ func Listen(port int) error {
 
 	r.GET("/black_ip", secret.Need(HandleAddBlackIp))
 	r.POST("/env", secret.Need(env.StoreEnv))
+	r.GET("/env", secret.Need(env.FindEnv))
 	r.GET("/help", HandleHelpDoc)
 	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "live-server@"+constant.Version) })
 
