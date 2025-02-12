@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/encrypts"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
 )
@@ -121,14 +120,12 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 		return "", nil, errors.New("cache client 状态异常, 无法命中缓存")
 	}
 
-	go func() {
-		// 超过 60s 未能成功请求完成则放弃
-		time.Sleep(time.Minute)
+	defer func() {
+		// 通知等待当前请求的其他 goroutine
 		if state, ok := cc.pendingState(cacheKey); ok {
-			log.Printf(colors.ToRed("超过 60s 未能成功响应: %s, 放弃请求"), url)
 			state.cond.Broadcast()
-			cc.removePending(cacheKey)
 		}
+		cc.removePending(cacheKey)
 	}()
 
 	// 发起请求
@@ -157,12 +154,6 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 			finalUrl:  finalUrl,
 			timestamp: time.Now().UnixMilli(),
 		})
-
-		// 通知等待当前请求的其他 goroutine
-		if state, ok := cc.pendingState(cacheKey); ok {
-			state.cond.Broadcast()
-		}
-		cc.removePending(cacheKey)
 	}()
 
 	// 拷贝一份响应体出来

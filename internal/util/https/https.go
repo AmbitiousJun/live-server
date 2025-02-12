@@ -28,7 +28,7 @@ func init() {
 		Transport: &http.Transport{
 			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 			Dial:                  (&net.Dialer{Timeout: time.Minute}).Dial,
-			ResponseHeaderTimeout: time.Minute * 5,
+			ResponseHeaderTimeout: time.Minute,
 		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
