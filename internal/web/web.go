@@ -16,7 +16,10 @@ import (
 
 // Listen 在指定端口上开启服务
 func Listen(port int) error {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(CustomLogger())
+
 	r.GET("/handler/:handler/ch/:channel", HandleLive)
 	r.HEAD("/handler/:handler/ch/:channel", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
 
