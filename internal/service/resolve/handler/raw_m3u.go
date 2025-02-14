@@ -33,9 +33,10 @@ func (h *rawM3UHandler) Name() string {
 // HelpDoc 处理器说明文档
 func (h *rawM3UHandler) HelpDoc() string {
 	sb := strings.Builder{}
-	sb.WriteString("\n1. 将 m3u 直播地址设置到环境光变量中, 变量名随意")
+	sb.WriteString("\n1. 将 m3u 直播地址设置到环境变量中, 变量名随意")
 	sb.WriteString("\n2. 类似于 remote_m3u 处理器的形式调用即可")
 	sb.WriteString("\n3. 该处理器适用于在本地服务直接代理远程的 m3u 播放地址（非订阅地址）")
+	sb.WriteString("\n4. 使用该处理器时, 频道名称 ch 可任意传递一个非空值")
 	return sb.String()
 }
 
