@@ -87,7 +87,7 @@ func ReadContent(urlInfo UrlInfo, content string) (Info, error) {
 				secondLine = urlInfo.Host + secondLine
 			} else {
 				// 相对路径
-				secondLine = urlInfo.Host + urlInfo.BaseDir + secondLine
+				secondLine = urlInfo.Host + urlInfo.BaseDir + "/" + secondLine
 			}
 		}
 

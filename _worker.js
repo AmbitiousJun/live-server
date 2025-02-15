@@ -2,6 +2,8 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const remoteParam = url.searchParams.get("remote");
+    const rawHeaderStr = url.searchParams.get("headers") || '';
+    const clientHeaders = rawHeaderStr.split('[[[:]]]');
 
     // 检查 `remote` 参数是否存在
     if (!remoteParam) {
@@ -27,6 +29,10 @@ export default {
       const reqHeader = new Headers();
       reqHeader.set("User-Agent", "libmpv");
       reqHeader.set("Accept-Encoding", request.headers.get("Accept-Encoding") || "");
+      for (let i = 0; i + 1 < clientHeaders.length; i += 2) {
+        reqHeader.set(clientHeaders[i], clientHeaders[i+1]);
+      }
+
       console.log(`Client Accept-Encoding header: ${reqHeader.get("Accept-Encoding")}`);
       const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
       const response = await fetch(remoteUrl, {
