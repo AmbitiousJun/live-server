@@ -45,6 +45,7 @@ func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
 	}
 
+	params.Headers = nil
 	return resolve.M3U8Result(playlist, params)
 }
 
