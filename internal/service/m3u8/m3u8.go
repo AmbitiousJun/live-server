@@ -2,7 +2,7 @@ package m3u8
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
@@ -47,7 +47,7 @@ func ReadContent(urlInfo UrlInfo, content string) (Info, error) {
 	if scanner.Scan() {
 		firstLine := scanner.Text()
 		if !strings.HasPrefix(firstLine, "#EXTM3U") {
-			return Info{}, errors.New("不是标准的 m3u8 文本")
+			return Info{}, fmt.Errorf("不是标准的 m3u8 文本: %s", content)
 		}
 		res.HeadComments = append(res.HeadComments, firstLine)
 	}

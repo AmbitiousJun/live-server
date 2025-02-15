@@ -22,6 +22,7 @@ func (h *rawM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	if !ok {
 		return resolve.HandleResult{}, fmt.Errorf("获取不到环境变量: [%s]", params.UrlEnv)
 	}
+	params.Headers = nil
 	return resolve.M3U8Result(url, params)
 }
 
