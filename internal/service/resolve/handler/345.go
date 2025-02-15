@@ -152,7 +152,7 @@ func (ih *iptv345Handler) Name() string {
 func (ih *iptv345Handler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 该处理器仅限自用, 不适合分享")
-	sb.WriteString("\n2. 如果想通过直连播放（重定向）, 请使用可自定请求头的播放器（酷9、天光云影等）设置 Referer 头: \"https://iptv345.com\" 后才可正常播放")
+	sb.WriteString("\n2. 如果想通过直连播放（重定向）, 请使用可自定请求头的播放器（酷9、天光云影等）设置 Referer 头: [https://iptv345.com/] 后才可正常播放")
 	sb.WriteString("\n3. 如果是切片代理模式, 则无需指定请求头")
 	sb.WriteString("\n4. 连续播放一段时间可能会发生断流, 需要重新加载")
 
@@ -164,8 +164,9 @@ func (ih *iptv345Handler) HelpDoc() string {
 		}
 		chs = append(chs, cur)
 	}
-
 	sb.WriteString("\n5. 支持频道: " + strings.Join(chs, "、"))
+
+	sb.WriteString("\n6. 可通过 query 参数 [format] 切换线路, 可配置值 [1 ~ ?], 默认请求线路 1, 每个频道的最多线路不同, 可自行测试, 超出最大线路时会直接报错提示")
 
 	return sb.String()
 }
