@@ -127,7 +127,6 @@ func ProxyTs(c *gin.Context) {
 	header := make(http.Header)
 	header.Set("User-Agent", DefaultProxyUA)
 	headerStr := c.Query("headers")
-	log.Println(c.Request.URL.Query())
 	if headerStr != "" {
 		kvs := strings.Split(headerStr, HeadersSeg)
 		for i := 0; i+1 < len(kvs); i += 2 {
