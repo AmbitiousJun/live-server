@@ -9,7 +9,9 @@ import (
 )
 
 func init() {
-	resolve.RegisterHandler(new(thirdGdtvHandler))
+	if false {
+		resolve.RegisterHandler(new(thirdGdtvHandler))
+	}
 }
 
 // thirdGdtvHandler 第三方广东新闻处理器

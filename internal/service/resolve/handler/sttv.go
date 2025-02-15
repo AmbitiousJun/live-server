@@ -25,7 +25,9 @@ var sttvChannels = map[string]string{
 }
 
 func init() {
-	resolve.RegisterHandler(new(sttvHandler))
+	if false {
+		resolve.RegisterHandler(new(sttvHandler))
+	}
 }
 
 // sttvHandler 汕头橄榄台处理器
