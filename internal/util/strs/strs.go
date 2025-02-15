@@ -28,3 +28,13 @@ func Sort(str string) string {
 	})
 	return string(runes)
 }
+
+// ReverseString 翻转字符串
+func ReverseString(s string) string {
+	runes := []rune(s) // 转换为rune切片
+	// 双指针翻转
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes) // 转换回字符串
+}

@@ -167,6 +167,42 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 	return finalUrl, resp, nil
 }
 
+// GetAllCacheUrls 获取当前缓存列表中所有的地址
+func (cc *CacheClient) GetAllCacheUrls() []string {
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
+
+	var result []string
+	for _, v := range cc.caches {
+		result = append(result, v.finalUrl)
+	}
+
+	return result
+}
+
+// RemoveUrlCache 移除指定 url 的缓存
+// 如果缓存中不存在该 url 则不进行任何操作
+func (cc *CacheClient) RemoveUrlCache(url string) {
+	if strs.AnyEmpty(url) {
+		return
+	}
+
+	cc.mu.RLock()
+	var toDelKey string
+	for cacheKey, resp := range cc.caches {
+		if resp.finalUrl == url {
+			toDelKey = cacheKey
+			break
+		}
+	}
+	cc.mu.RUnlock()
+
+	if strs.AnyEmpty(toDelKey) {
+		return
+	}
+	cc.delCache(toDelKey)
+}
+
 // cacheKey 计算某个请求的缓存 hash key
 func (cc *CacheClient) cacheKey(url, method, body string, header http.Header, autoRedirect bool) string {
 	// 将 code、header、body 拼接在一起, 按照字典序排序后计算出 md5 hash 值

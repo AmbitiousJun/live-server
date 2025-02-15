@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
@@ -21,12 +22,13 @@ const (
 	Env_CustomTsProxyEnableKey = "custom_ts_proxy_enable" // 是否启用自定义的代理接口
 	Env_CustomTsProxyHostKey   = "custom_ts_proxy_host"   // 自定义代理接口地址
 	DefaultProxyUA             = "libmpv"                 // 代理的默认客户端标识
+	HeadersSeg                 = "[[[:]]]"                // 分割请求头的分隔符
 )
 
 var (
 
 	// cacheableProxyClient 使用带缓存特性的 http 客户端代理 m3u
-	cacheableProxyClient = https.NewCacheClient(1000, time.Second*5)
+	cacheableProxyClient = https.NewCacheClient(1000, time.Second*3)
 
 	// cacheableTsProxyClient 使用带缓存特性的 http 客户端代理 ts
 	cacheableTsProxyClient = https.NewCacheClient(50, time.Second*30)
@@ -78,10 +80,24 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 	}
 	basePath += "?remote="
 
+	var headerStr string
+	if header != nil {
+		kvs := []string{}
+		for k, vs := range header {
+			kvs = append(kvs, k, strings.Join(vs, ", "))
+		}
+		headerStr = strings.Join(kvs, HeadersSeg)
+	}
+
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
-		return basePath + remoteStr
+		res := basePath + remoteStr
+
+		if headerStr != "" {
+			res += fmt.Sprintf("&headers=%s", headerStr)
+		}
+		return res
 	}), nil
 }
 
@@ -110,6 +126,15 @@ func ProxyTs(c *gin.Context) {
 
 	header := make(http.Header)
 	header.Set("User-Agent", DefaultProxyUA)
+	headerStr := c.Query("headers")
+	log.Println(c.Request.URL.Query())
+	if headerStr != "" {
+		kvs := strings.Split(headerStr, HeadersSeg)
+		for i := 0; i+1 < len(kvs); i += 2 {
+			header.Set(kvs[i], kvs[i+1])
+		}
+	}
+
 	_, resp, err := cacheableTsProxyClient.Request(http.MethodGet, remote, header, nil, true)
 	if err != nil {
 		log.Printf(colors.ToRed("代理切片失败: %v"), err)
