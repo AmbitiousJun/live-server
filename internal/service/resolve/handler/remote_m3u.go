@@ -58,6 +58,7 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 		return resolve.HandleResult{}, fmt.Errorf("匹配频道名称失败: %s, 请检查远程地址是否有效", params.ChName)
 	}
 
+	params.Headers = nil
 	return resolve.M3U8Result(destInfo.Url, params)
 }
 
