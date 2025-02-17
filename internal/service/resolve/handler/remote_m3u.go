@@ -77,3 +77,8 @@ func (h *remoteM3UHandler) HelpDoc() string {
 func (h *remoteM3UHandler) SupportM3UProxy() bool {
 	return true
 }
+
+// IsEnable 标记处理器是否是启用状态
+func (h *remoteM3UHandler) IsEnable() bool {
+	return true
+}

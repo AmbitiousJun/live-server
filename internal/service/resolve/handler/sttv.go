@@ -25,9 +25,7 @@ var sttvChannels = map[string]string{
 }
 
 func init() {
-	if false {
-		resolve.RegisterHandler(new(sttvHandler))
-	}
+	resolve.RegisterHandler(new(sttvHandler))
 }
 
 // sttvHandler 汕头橄榄台处理器
@@ -98,5 +96,10 @@ func (sttvHandler) HelpDoc() string {
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
 func (sttvHandler) SupportM3UProxy() bool {
+	return false
+}
+
+// IsEnable 标记处理器是否是启用状态
+func (sttvHandler) IsEnable() bool {
 	return false
 }
