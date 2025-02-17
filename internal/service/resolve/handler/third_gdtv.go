@@ -9,9 +9,7 @@ import (
 )
 
 func init() {
-	if false {
-		resolve.RegisterHandler(new(thirdGdtvHandler))
-	}
+	resolve.RegisterHandler(new(thirdGdtvHandler))
 }
 
 // thirdGdtvHandler 第三方广东新闻处理器
@@ -62,4 +60,9 @@ func (thirdGdtvHandler) HelpDoc() string {
 // 如果返回 true, 会自动在帮助文档中加入标记
 func (thirdGdtvHandler) SupportM3UProxy() bool {
 	return true
+}
+
+// IsEnable 标记处理器是否是启用状态
+func (thirdGdtvHandler) IsEnable() bool {
+	return false
 }

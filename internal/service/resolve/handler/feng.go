@@ -158,6 +158,11 @@ func (f *fengHandler) SupportM3UProxy() bool {
 	return false
 }
 
+// IsEnable 标记处理器是否是启用状态
+func (f *fengHandler) IsEnable() bool {
+	return true
+}
+
 // Wait 请求速率限制
 func (f *fengHandler) Wait() {
 	wg := sync.WaitGroup{}

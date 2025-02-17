@@ -73,6 +73,11 @@ func (y *youtubeHandler) SupportM3UProxy() bool {
 	return true
 }
 
+// IsEnable 标记处理器是否是启用状态
+func (y *youtubeHandler) IsEnable() bool {
+	return true
+}
+
 // initCacher 初始化频道缓存器
 func (y *youtubeHandler) initCacher() {
 	y.cacher = resolve.NewCacher(

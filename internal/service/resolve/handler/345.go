@@ -178,6 +178,11 @@ func (ih *iptv345Handler) SupportM3UProxy() bool {
 	return true
 }
 
+// IsEnable 标记处理器是否是启用状态
+func (ih *iptv345Handler) IsEnable() bool {
+	return true
+}
+
 func (ih *iptv345Handler) initCacher() {
 	ih.cacher = resolve.NewCacher(
 		resolve.WithCacheTimeout[iptv345Params](time.Hour),
