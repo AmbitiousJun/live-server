@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -45,7 +46,10 @@ func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
 	}
 
-	params.Headers = nil
+	params.Headers = make(http.Header)
+	params.Headers.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+	params.Headers.Set("Referer", "https://www.youtube.com/")
+	params.Headers.Set("Origin", "https://www.youtube.com")
 	return resolve.M3U8Result(playlist, params)
 }
 
@@ -108,7 +112,7 @@ func (y *youtubeHandler) initCacher() {
 
 		resolve.WithCacheTimeout[youtubeParams](time.Hour),
 		resolve.WithRemoveInterval[youtubeParams](time.Minute*10),
-		resolve.WithUpdateInterval[youtubeParams](time.Hour+time.Minute*30),
+		resolve.WithUpdateInterval[youtubeParams](time.Hour*2),
 	)
 }
 
