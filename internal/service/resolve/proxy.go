@@ -86,21 +86,22 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 		for k, vs := range header {
 			kvs = append(kvs, k, strings.Join(vs, ", "))
 		}
-		headerStr = strings.Join(kvs, HeadersSeg)
+		headerStr = base64.StdEncoding.EncodeToString([]byte(strings.Join(kvs, HeadersSeg)))
 	}
+
+	tsLink, _ := url.Parse(basePath)
 
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
-		res, _ := url.Parse(basePath)
-		q := res.Query()
+		q := tsLink.Query()
 		q.Set("remote", remoteStr)
 		if headerStr != "" {
 			q.Set("headers", headerStr)
 		}
 
-		res.RawQuery = q.Encode()
-		return res.String()
+		tsLink.RawQuery = q.Encode()
+		return tsLink.String()
 	}), nil
 }
 
@@ -121,7 +122,7 @@ func ProxyTs(c *gin.Context) {
 	// 解码远程 url 地址
 	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
 	if err != nil {
-		log.Println(colors.ToRed("代理切片失败, 参数必须是 base64 编码"))
+		log.Println(colors.ToRed("代理切片失败, 参数 [remote] 必须是 base64 编码"))
 		c.String(http.StatusBadRequest, "参数错误")
 		return
 	}
@@ -129,7 +130,14 @@ func ProxyTs(c *gin.Context) {
 
 	header := make(http.Header)
 	header.Set("User-Agent", DefaultProxyUA)
-	headerStr := c.Query("headers")
+	headerBytes, err := base64.StdEncoding.DecodeString(c.Query("headers"))
+	if err != nil {
+		log.Println(colors.ToRed("代理切片失败, 参数 [headers] 必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+
+	headerStr := string(headerBytes)
 	if headerStr != "" {
 		kvs := strings.Split(headerStr, HeadersSeg)
 		for i := 0; i+1 < len(kvs); i += 2 {

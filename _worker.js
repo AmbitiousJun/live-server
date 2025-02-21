@@ -2,8 +2,6 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const remoteParam = url.searchParams.get("remote");
-    const rawHeaderStr = url.searchParams.get("headers") || '';
-    const clientHeaders = rawHeaderStr.split('[[[:]]]');
 
     // 检查 `remote` 参数是否存在
     if (!remoteParam) {
@@ -13,6 +11,7 @@ export default {
     try {
       // Base64 解码 `remote` 参数
       const remoteUrl = new URL(atob(remoteParam));
+      const clientHeaders = atob(url.searchParams.get("headers") || '').split('[[[:]]]');
 
       // 获取 Cache 对象
       const cacheKey = new Request(remoteUrl.toString(), request);
