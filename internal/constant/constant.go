@@ -1,7 +1,7 @@
 package constant
 
 const (
-	Version = "v1.16.4" // 版本号
+	Version = "v1.16.5" // 版本号
 )
 
 const (
