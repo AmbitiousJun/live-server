@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -78,7 +79,6 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 	if customHost, ok := getCustomTsProxyHost(tsProxyMode); ok {
 		basePath = customHost
 	}
-	basePath += "?remote="
 
 	var headerStr string
 	if header != nil {
@@ -92,12 +92,15 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 	// 将 ts 切片地址更改为本地代理地址
 	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
 		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
-		res := basePath + remoteStr
-
+		res, _ := url.Parse(basePath)
+		q := res.Query()
+		q.Set("remote", remoteStr)
 		if headerStr != "" {
-			res += fmt.Sprintf("&headers=%s", headerStr)
+			q.Set("headers", headerStr)
 		}
-		return res
+
+		res.RawQuery = q.Encode()
+		return res.String()
 	}), nil
 }
 
