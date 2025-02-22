@@ -38,6 +38,12 @@ services:
 docker-compose up -d
 ```
 
+查看运行日志:
+
+```shell
+docker logs -f live-server -n 1000
+```
+
 ## 直接运行二进制
 
 从 release 页下载对应的二进制文件
