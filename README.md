@@ -60,6 +60,18 @@ live-server -prod=true
 live-server -prod=true -p 8880
 ```
 
+开启守护进程，运行在后台：
+
+```shell
+nohup ive-server -prod=true -p 8880 > "./app.log" 2>&1 &
+```
+
+停止 `8880` 端口进程：
+
+```shell
+lsof -ti:8880 | xargs -r kill -9
+```
+
 ## 请我喝杯 9.9💰 的 Luckin Coffee☕️
 
 ![](assets/2024-11-05-09-59-45.png)
