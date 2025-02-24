@@ -63,7 +63,7 @@ live-server -prod=true -p 8880
 开启守护进程，运行在后台：
 
 ```shell
-nohup ive-server -prod=true -p 8880 > "./app.log" 2>&1 &
+nohup live-server -prod=true -p 8880 > "./app.log" 2>&1 &
 ```
 
 停止 `8880` 端口进程：
