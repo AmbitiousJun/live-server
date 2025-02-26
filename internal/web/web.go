@@ -27,7 +27,9 @@ func Listen(port int) error {
 	r.POST("/env", secret.Need(env.StoreEnv))
 	r.GET("/env", secret.Need(env.FindEnv))
 	r.GET("/help", HandleHelpDoc)
-	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "live-server@"+constant.Version) })
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, fmt.Sprintf("live-server@%s => repo: %s", constant.Version, constant.RepoAddr))
+	})
 
 	// 地域白名单操作接口
 	war := r.Group("/white_area")

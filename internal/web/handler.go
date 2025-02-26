@@ -52,14 +52,14 @@ func HandleLive(c *gin.Context) {
 
 	clientIp := c.ClientIP()
 	if net.IsBlackIp(clientIp) {
-		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
+		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
 		return
 	}
 
 	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
 		c.Set(constant.Gin_IpAddrInfoKey, ipInfo)
 		if !whitearea.Passable(ipInfo) {
-			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: https://github.com/AmbitiousJun/live-server")
+			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
 			return
 		}
 	}

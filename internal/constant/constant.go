@@ -1,7 +1,8 @@
 package constant
 
 const (
-	Version = "v1.16.5" // 版本号
+	Version  = "v1.16.5"                                     // 版本号
+	RepoAddr = "https://github.com/AmbitiousJun/live-server" // 仓库地址
 )
 
 const (
