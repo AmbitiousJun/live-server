@@ -78,7 +78,7 @@ func (h *remoteM3UHandler) SupportM3UProxy() bool {
 	return true
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (h *remoteM3UHandler) IsEnable() bool {
+// Enabled 标记处理器是否是启用状态
+func (h *remoteM3UHandler) Enabled() bool {
 	return true
 }

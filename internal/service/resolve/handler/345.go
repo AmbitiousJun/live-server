@@ -178,9 +178,9 @@ func (ih *iptv345Handler) SupportM3UProxy() bool {
 	return true
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (ih *iptv345Handler) IsEnable() bool {
-	return true
+// Enabled 标记处理器是否是启用状态
+func (ih *iptv345Handler) Enabled() bool {
+	return false
 }
 
 func (ih *iptv345Handler) initCacher() {

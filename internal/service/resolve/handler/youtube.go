@@ -77,8 +77,8 @@ func (y *youtubeHandler) SupportM3UProxy() bool {
 	return true
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (y *youtubeHandler) IsEnable() bool {
+// Enabled 标记处理器是否是启用状态
+func (y *youtubeHandler) Enabled() bool {
 	return true
 }
 

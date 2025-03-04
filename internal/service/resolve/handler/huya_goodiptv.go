@@ -94,7 +94,7 @@ func (h *huyaGoodIptvHandler) SupportM3UProxy() bool {
 	return false
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (h *huyaGoodIptvHandler) IsEnable() bool {
+// Enabled 标记处理器是否是启用状态
+func (h *huyaGoodIptvHandler) Enabled() bool {
 	return true
 }
