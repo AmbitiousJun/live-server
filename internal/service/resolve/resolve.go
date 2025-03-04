@@ -70,8 +70,8 @@ type Handler interface {
 	// 如果返回 true, 会自动在帮助文档中加入标记
 	SupportM3UProxy() bool
 
-	// IsEnable 标记处理器是否是启用状态
-	IsEnable() bool
+	// Enabled 标记处理器是否是启用状态
+	Enabled() bool
 }
 
 // RegisterHandler 注册处理器到内存中
@@ -90,7 +90,7 @@ func GetHandler(name string) (Handler, bool) {
 	handlerMapOpMutex.RLock()
 	defer handlerMapOpMutex.RUnlock()
 	handler, ok := handlerMap[name]
-	if !ok || !handler.IsEnable() {
+	if !ok || !handler.Enabled() {
 		return nil, false
 	}
 	return handler, true
@@ -157,7 +157,7 @@ func HelpDoc() string {
 	handlerMapOpMutex.RLock()
 	defer handlerMapOpMutex.RUnlock()
 	for name, handler := range handlerMap {
-		if !handler.IsEnable() {
+		if !handler.Enabled() {
 			continue
 		}
 

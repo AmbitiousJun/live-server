@@ -99,7 +99,7 @@ func (sttvHandler) SupportM3UProxy() bool {
 	return false
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (sttvHandler) IsEnable() bool {
+// Enabled 标记处理器是否是启用状态
+func (sttvHandler) Enabled() bool {
 	return false
 }

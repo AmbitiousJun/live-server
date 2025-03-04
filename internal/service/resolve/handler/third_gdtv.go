@@ -62,7 +62,7 @@ func (thirdGdtvHandler) SupportM3UProxy() bool {
 	return true
 }
 
-// IsEnable 标记处理器是否是启用状态
-func (thirdGdtvHandler) IsEnable() bool {
+// Enabled 标记处理器是否是启用状态
+func (thirdGdtvHandler) Enabled() bool {
 	return false
 }
