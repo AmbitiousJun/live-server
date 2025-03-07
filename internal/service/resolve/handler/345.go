@@ -47,12 +47,72 @@ var iptv345ChMap = map[string]iptv345Params{
 	"cctv16": {tid: "ys", id: "17"},
 	"cctv17": {tid: "ys", id: "18"},
 
-	"fhzw": {tid: "gt", id: "1", comment: "凤凰中文"},
-	"fhzx": {tid: "gt", id: "2", comment: "凤凰资讯"},
-	"fhxg": {tid: "gt", id: "3", comment: "凤凰香港"},
-	"ztxw": {tid: "gt", id: "43", comment: "中天新闻"},
-	"dsxw": {tid: "gt", id: "44", comment: "东森新闻"},
-	"hyxw": {tid: "gt", id: "53", comment: "寰宇新闻"},
+	"hunws":    {tid: "ws", id: "1", comment: "湖南卫视"},
+	"jsws":     {tid: "ws", id: "2", comment: "江苏卫视"},
+	"zjws":     {tid: "ws", id: "3", comment: "浙江卫视"},
+	"dfws":     {tid: "ws", id: "4", comment: "东方卫视"},
+	"bjws":     {tid: "ws", id: "5", comment: "北京卫视"},
+	"szws":     {tid: "ws", id: "6", comment: "深圳卫视"},
+	"gdws":     {tid: "ws", id: "7", comment: "广东卫视"},
+	"ahws":     {tid: "ws", id: "8", comment: "安徽卫视"},
+	"dnws":     {tid: "ws", id: "9", comment: "东南卫视"},
+	"hebws":    {tid: "ws", id: "10", comment: "河北卫视"},
+	"hljws":    {tid: "ws", id: "11", comment: "黑龙江卫视"},
+	"hubws":    {tid: "ws", id: "12", comment: "湖北卫视"},
+	"jxws":     {tid: "ws", id: "13", comment: "江西卫视"},
+	"lnws":     {tid: "ws", id: "14", comment: "辽宁卫视"},
+	"hainws":   {tid: "ws", id: "15", comment: "海南卫视"},
+	"sdws":     {tid: "ws", id: "16", comment: "山东卫视"},
+	"scws":     {tid: "ws", id: "17", comment: "四川卫视"},
+	"tjws":     {tid: "ws", id: "18", comment: "天津卫视"},
+	"cqws":     {tid: "ws", id: "19", comment: "重庆卫视"},
+	"gzws":     {tid: "ws", id: "20", comment: "贵州卫视"},
+	"jlws":     {tid: "ws", id: "21", comment: "吉林卫视"},
+	"gxws":     {tid: "ws", id: "22", comment: "广西卫视"},
+	"henws":    {tid: "ws", id: "23", comment: "河南卫视"},
+	"gsws":     {tid: "ws", id: "24", comment: "甘肃卫视"},
+	"qhws":     {tid: "ws", id: "25", comment: "青海卫视"},
+	"ynws":     {tid: "ws", id: "26", comment: "云南卫视"},
+	"nmgws":    {tid: "ws", id: "27", comment: "内蒙古卫视"},
+	"shan1xws": {tid: "ws", id: "28", comment: "山西卫视"},
+	"shan3xws": {tid: "ws", id: "29", comment: "陕西卫视"},
+	"btws":     {tid: "ws", id: "30", comment: "兵团卫视"},
+	"xjws":     {tid: "ws", id: "31", comment: "新疆卫视"},
+	"xzws":     {tid: "ws", id: "32", comment: "西藏卫视"},
+	"nxws":     {tid: "ws", id: "33", comment: "宁夏卫视"},
+	"ybws":     {tid: "ws", id: "34", comment: "延边卫视"},
+	"kbws":     {tid: "ws", id: "35", comment: "康巴卫视"},
+	"dwqws":    {tid: "ws", id: "36", comment: "大湾区卫视"},
+	"gdzj":     {tid: "ws", id: "37", comment: "广东珠江"},
+	"xmws":     {tid: "ws", id: "38", comment: "厦门卫视"},
+	"adws":     {tid: "ws", id: "39", comment: "安多卫视"},
+	"nlws":     {tid: "ws", id: "40", comment: "农林卫视"},
+	"ssws":     {tid: "ws", id: "41", comment: "三沙卫视"},
+
+	"fhzw":    {tid: "gt", id: "1", comment: "凤凰中文"},
+	"fhzx":    {tid: "gt", id: "2", comment: "凤凰资讯"},
+	"fhxg":    {tid: "gt", id: "3", comment: "凤凰香港"},
+	"tvbfc":   {tid: "gt", id: "5", comment: "TVB翡翠"},
+	"tvbwxxw": {tid: "gt", id: "6", comment: "TVB无线新闻"},
+	"tvbplus": {tid: "gt", id: "8", comment: "TVB Plus"},
+	"tvbmz":   {tid: "gt", id: "9", comment: "TVB明珠"},
+	"xgyxxw":  {tid: "gt", id: "11", comment: "香港有线新闻"},
+	"xgyx18":  {tid: "gt", id: "12", comment: "香港有线18"},
+	"nowbg":   {tid: "gt", id: "15", comment: "NOW爆谷"},
+	"nowzb":   {tid: "gt", id: "16", comment: "NOW直播"},
+	"nowxw":   {tid: "gt", id: "17", comment: "NOW新闻"},
+	"nowcj":   {tid: "gt", id: "18", comment: "NOW财经"},
+	"ztxw":    {tid: "gt", id: "43", comment: "中天新闻"},
+	"dsxw":    {tid: "gt", id: "44", comment: "东森新闻"},
+	"dscjxw":  {tid: "gt", id: "45", comment: "东森财经新闻"},
+	"zsxw":    {tid: "gt", id: "46", comment: "中视新闻"},
+	"tsxw":    {tid: "gt", id: "47", comment: "台视新闻"},
+	"slxw":    {tid: "gt", id: "48", comment: "三立新闻"},
+	"msxw":    {tid: "gt", id: "50", comment: "民视新闻"},
+	"hsxw":    {tid: "gt", id: "51", comment: "华视新闻"},
+	"jdsxw":   {tid: "gt", id: "52", comment: "镜电视新闻"},
+	"hyxw":    {tid: "gt", id: "53", comment: "寰宇新闻"},
+	"tvbsxw":  {tid: "gt", id: "54", comment: "TVBS新闻"},
 }
 
 // iptv345Handler 345 直播处理器
@@ -83,7 +143,7 @@ func init() {
 	ih.initCacher()
 	ih.playUriSeg = "{{,}}"
 
-	bytes, _ := base64.StdEncoding.DecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIHN0cmluZyA9ICIke3N0cmluZ30iOwoKICAgIGZ1bmN0aW9uIGRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIG8xLCBvMiwgbzMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwgYWMgPSAwLCBkZWMgPSAiIiwgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YQogICAgICAgIH0KICAgICAgICBkYXRhICs9ICIiOwogICAgICAgIGRvIHsKICAgICAgICAgICAgaDEgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDIgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDMgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDQgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgYml0cyA9IGgxIDw8IDE4IHwgaDIgPDwgMTIgfCBoMyA8PCA2IHwgaDQ7CiAgICAgICAgICAgIG8xID0gYml0cyA+PiAxNiAmIDI1NTsKICAgICAgICAgICAgbzIgPSBiaXRzID4+IDggJiAyNTU7CiAgICAgICAgICAgIG8zID0gYml0cyAmIDI1NTsKICAgICAgICAgICAgaWYgKGgzID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShvMSkKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChoNCA9PSA2NCkgewogICAgICAgICAgICAgICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKG8xLCBvMikKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUobzEsIG8yLCBvMykKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0gd2hpbGUgKGkgPCBkYXRhLmxlbmd0aCk7CiAgICAgICAgZGVjID0gdG1wX2Fyci5qb2luKCIiKTsKICAgICAgICByZXR1cm4gZGVjCiAgICB9CiAgICB2YXIga2V5ID0gImlwdHYuY29tIjsKICAgIHN0cmluZyA9IGRlY29kZShzdHJpbmcpOwogICAgbGVuID0ga2V5Lmxlbmd0aDsKICAgIGNvZGUgPSAiIjsKICAgIGZvciAoaSA9IDA7IGkgPCBzdHJpbmcubGVuZ3RoOyBpKyspIHsKICAgICAgICBrID0gaSAlIGxlbjsKICAgICAgICBjb2RlICs9IFN0cmluZy5mcm9tQ2hhckNvZGUoc3RyaW5nLmNoYXJDb2RlQXQoaSkgXiBrZXkuY2hhckNvZGVBdChrKSkKICAgIH0KICAgIHZhciB4YWMgPSBkZWNvZGUoY29kZSk7CiAgICB4YWMgPSB1bmVzY2FwZSh4YWMpOwogICAgCiAgICBjb25zdCBtYXRjaGVzID0geGFjLm1hdGNoKC88c2NyaXB0XGJbXj5dKj4oLio/KTxcL3NjcmlwdD4vZ2kpOwogICAgaWYgKG1hdGNoZXMubGVuZ3RoIDwgMykgewogICAgICAgIHJldHVybiB7IGVycjogYHhhYyDmiKrlj5blvILluLg6ICR7bWF0Y2hlc31gIH07CiAgICB9CiAgICBjb25zdCBzY3JpcHQgPSAobWF0Y2hlc1syXSB8fCAnJykucmVwbGFjZUFsbCgvPFwvP3NjcmlwdD4vZywgJycpCiAgICBldmFsKHNjcmlwdCk7CiAgICByZXR1cm4geyBoa2VuLCBoa2VucywgdG9rZW4gfTsKfSkoKQ==`)
+	bytes, _ := base64.StdEncoding.DecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIHN0cmluZyA9ICIke3N0cmluZ30iOwoKICAgIGZ1bmN0aW9uIGRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIG8xLCBvMiwgbzMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwgYWMgPSAwLCBkZWMgPSAiIiwgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YQogICAgICAgIH0KICAgICAgICBkYXRhICs9ICIiOwogICAgICAgIGRvIHsKICAgICAgICAgICAgaDEgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDIgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDMgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDQgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgYml0cyA9IGgxIDw8IDE4IHwgaDIgPDwgMTIgfCBoMyA8PCA2IHwgaDQ7CiAgICAgICAgICAgIG8xID0gYml0cyA+PiAxNiAmIDI1NTsKICAgICAgICAgICAgbzIgPSBiaXRzID4+IDggJiAyNTU7CiAgICAgICAgICAgIG8zID0gYml0cyAmIDI1NTsKICAgICAgICAgICAgaWYgKGgzID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShvMSkKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChoNCA9PSA2NCkgewogICAgICAgICAgICAgICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKG8xLCBvMikKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUobzEsIG8yLCBvMykKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0gd2hpbGUgKGkgPCBkYXRhLmxlbmd0aCk7CiAgICAgICAgZGVjID0gdG1wX2Fyci5qb2luKCIiKTsKICAgICAgICByZXR1cm4gZGVjCiAgICB9CiAgICB2YXIga2V5ID0gImlwdHYuY29tIjsKICAgIHN0cmluZyA9IGRlY29kZShzdHJpbmcpOwogICAgbGVuID0ga2V5Lmxlbmd0aDsKICAgIGNvZGUgPSAiIjsKICAgIGZvciAoaSA9IDA7IGkgPCBzdHJpbmcubGVuZ3RoOyBpKyspIHsKICAgICAgICBrID0gaSAlIGxlbjsKICAgICAgICBjb2RlICs9IFN0cmluZy5mcm9tQ2hhckNvZGUoc3RyaW5nLmNoYXJDb2RlQXQoaSkgXiBrZXkuY2hhckNvZGVBdChrKSkKICAgIH0KICAgIHZhciB4YWMgPSBkZWNvZGUoY29kZSk7CiAgICB4YWMgPSB1bmVzY2FwZSh4YWMpOwogICAgCiAgICBjb25zdCBtYXRjaGVzID0geGFjLm1hdGNoKC88c2NyaXB0XGJbXj5dKj4oLio/KTxcL3NjcmlwdD4vZ2kpOwogICAgaWYgKG1hdGNoZXMubGVuZ3RoIDwgNCkgewogICAgICAgIHJldHVybiB7IGVycjogYHhhYyDmiKrlj5blvILluLg6ICR7bWF0Y2hlc31gIH07CiAgICB9CiAgICBjb25zdCBzY3JpcHQgPSAobWF0Y2hlc1szXSB8fCAnJykucmVwbGFjZUFsbCgvPFwvP3NjcmlwdD4vZywgJycpCiAgICBldmFsKHNjcmlwdCk7CiAgICByZXR1cm4geyBoa2VuLCBoa2VucywgdG9rZW4gfTsKfSkoKQ==`)
 	ih.decodeTokenScript = string(bytes)
 
 	bytes, _ = base64.StdEncoding.DecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIGNvbnN0IGhrZW4gPSAiJHtoa2VufSI7CiAgICBjb25zdCBoa2VucyA9ICIke2hrZW5zfSI7CiAgICBjb25zdCB0b2tlbiA9ICIke3Rva2VufSI7CiAgICBsZXQgdXJpID0gIiR7dXJpfSI7CgogICAgZnVuY3Rpb24gYmRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIGExLCBhMiwgYTMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwKICAgICAgICBhYyA9IDAsCiAgICAgICAgZGVjID0gIiIsCiAgICAgICAgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YTsKICAgICAgICB9CiAgICAgICAgZGF0YSArPSAnJzsKICAgICAgICBkbyB7CiAgICAgICAgICAgIGgxID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGgyID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGgzID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGg0ID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGJpdHMgPSBoMSA8PCAxOCB8IGgyIDw8IDEyIHwgaDMgPDwgNiB8IGg0OwogICAgICAgICAgICBhMSA9IGJpdHMgPj4gMTYgJiAweGZmOwogICAgICAgICAgICBhMiA9IGJpdHMgPj4gOCAmIDB4ZmY7CiAgICAgICAgICAgIGEzID0gYml0cyAmIDB4ZmY7CiAgICAgICAgICAgIGlmIChoMyA9PSA2NCkgewogICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoYTEpOwogICAgICAgICAgICB9IGVsc2UgaWYgKGg0ID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShhMSwgYTIpOwogICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoYTEsIGEyLCBhMyk7CiAgICAgICAgICAgIH0KICAgICAgICB9IHdoaWxlIChpIDwgZGF0YS5sZW5ndGgpOwogICAgICAgIGRlYyA9IHRtcF9hcnIuam9pbignJyk7CiAgICAgICAgcmV0dXJuIGRlYzsKICAgIH0KCiAgICBmdW5jdGlvbiBiZGVjb2RlYihzdHIsa2V5KSB7CiAgICAgICAgc3RyaW5nID0gYmRlY29kZShzdHIpOwogICAgICAgIGxlbiA9IGtleS5sZW5ndGg7CiAgICAgICAgY29kZSA9ICIiOwogICAgICAgIGZvciAoaSA9IDA7IGkgPCBzdHJpbmcubGVuZ3RoOyBpKyspIHsKICAgICAgICBrID0gaSAlIGxlbjsKICAgICAgICBjb2RlICs9IFN0cmluZy5mcm9tQ2hhckNvZGUoc3RyaW5nLmNoYXJDb2RlQXQoaSkgXiBrZXkuY2hhckNvZGVBdChrKSk7CiAgICAgICAgfQogICAgICAgIHN0cmEgPSBiZGVjb2RlKGNvZGUpOwogICAgICAgIHJldHVybiBzdHJhOwogICAgfQoKICAgIHVyaSA9IHVyaS5zcGxpdCgiIikucmV2ZXJzZSgpLmpvaW4oIiIpOwogICAgdXJpID0gYmRlY29kZWIodXJpLGhrZW4pOwogICAgdXJpID0gdXJpLnJlcGxhY2UoInRva2VuPTEyMyIsICJ0b2tlbj0iK3Rva2VuKTsKICAgIHVyaSA9IHVyaS5yZXBsYWNlKCJ0b2tlbj0iK2hrZW5zLCAidG9rZW49Iit0b2tlbik7CiAgICB1cmkgPSB1cmkucmVwbGFjZShoa2VuLCAiIik7CiAgICByZXR1cm4gdXJpOwp9KSgp`)
@@ -91,6 +151,8 @@ func init() {
 
 	ih.requestHeader = make(http.Header)
 	ih.requestHeader.Set("Referer", "https://iptv345.com/")
+	ih.requestHeader.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+	ih.requestHeader.Set("Origin", "null")
 
 	ih.sessionCli = https.NewCacheClient(50, time.Minute*30)
 	ih.cliMaxSessionNum = 3
@@ -180,7 +242,7 @@ func (ih *iptv345Handler) SupportM3UProxy() bool {
 
 // Enabled 标记处理器是否是启用状态
 func (ih *iptv345Handler) Enabled() bool {
-	return false
+	return true
 }
 
 func (ih *iptv345Handler) initCacher() {
@@ -329,7 +391,7 @@ func (ih *iptv345Handler) recoverPlayUri(hken, hkens, token, originPlayUri strin
 	if err != nil {
 		return "", fmt.Errorf("执行 js 异常: %v", err)
 	}
-	return res.String(), nil
+	return strings.Replace(res.String(), "type=.flv", "type=.m3u8", 1), nil
 }
 
 // sendSessionHeartBeatPkg 发送 session 心跳包, 防止 session 被关闭

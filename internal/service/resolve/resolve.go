@@ -137,7 +137,7 @@ func HelpDoc() string {
 	sb.WriteString("\n4. 代理参数 ③：ts_proxy_mode => ts 代理模式，传递 custom 则使用自定义的代理接口，传递 local 则使用本地代理，传递该参数时会覆盖全局配置")
 	sb.WriteString("\n5. 开启切片代理时，会消耗服务器流量")
 	sb.WriteString("\n6. 代理功能可以正常使用的前提是服务器的网络环境是能够和直播源进行连通的")
-	sb.WriteString("\n7. 举例：/handler/third_gdtv/ch/xwpd?proxy_m3u=1")
+	sb.WriteString("\n7. 举例：${clientOrigin}/handler/345/ch/cctv13?proxy_m3u=1&proxy_ts=1&ts_proxy_mode=custom&format=1")
 	sb.WriteString("\n")
 
 	// 自定义切片代理接口
