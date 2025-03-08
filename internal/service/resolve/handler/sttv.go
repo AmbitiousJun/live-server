@@ -32,7 +32,7 @@ func init() {
 type sttvHandler struct{}
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
-func (sh *sttvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
+func (h *sttvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	// 验证频道
 	gid, ok := sttvChannels[params.ChName]
 	if !ok {
@@ -84,22 +84,28 @@ func (sh *sttvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult
 }
 
 // Name 处理器名称
-func (sh *sttvHandler) Name() string {
+func (h *sttvHandler) Name() string {
 	return "sttv"
 }
 
 // HelpDoc 处理器说明文档
-func (sttvHandler) HelpDoc() string {
+func (h *sttvHandler) HelpDoc() string {
 	return "\n目前已失效，勿用"
 }
 
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
-func (sttvHandler) SupportM3UProxy() bool {
+func (h *sttvHandler) SupportM3UProxy() bool {
+	return false
+}
+
+// SupportCustomHeaders 是否支持自定义请求头
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (h *sttvHandler) SupportCustomHeaders() bool {
 	return false
 }
 
 // Enabled 标记处理器是否是启用状态
-func (sttvHandler) Enabled() bool {
+func (h *sttvHandler) Enabled() bool {
 	return false
 }

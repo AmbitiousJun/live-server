@@ -22,7 +22,6 @@ func (h *rawM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 	if !ok {
 		return resolve.HandleResult{}, fmt.Errorf("获取不到环境变量: [%s]", params.UrlEnv)
 	}
-	params.Headers = nil
 	return resolve.M3U8Result(url, params)
 }
 
@@ -45,6 +44,12 @@ func (h *rawM3UHandler) HelpDoc() string {
 //
 // 如果返回 true, 会自动在帮助文档中加入标记
 func (h *rawM3UHandler) SupportM3UProxy() bool {
+	return true
+}
+
+// SupportCustomHeaders 是否支持自定义请求头
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (h *rawM3UHandler) SupportCustomHeaders() bool {
 	return true
 }
 

@@ -24,7 +24,6 @@ const (
 	Env_CustomTsProxyEnableKey = "custom_ts_proxy_enable" // 是否启用自定义的代理接口
 	Env_CustomTsProxyHostKey   = "custom_ts_proxy_host"   // 自定义代理接口地址
 	DefaultProxyUA             = "libmpv"                 // 代理的默认客户端标识
-	HeadersSeg                 = "[[[:]]]"                // 分割请求头的分隔符
 )
 
 var (
@@ -87,7 +86,7 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 		for k, vs := range header {
 			kvs = append(kvs, k, strings.Join(vs, ", "))
 		}
-		headerStr = base64.StdEncoding.EncodeToString([]byte(strings.Join(kvs, HeadersSeg)))
+		headerStr = base64.StdEncoding.EncodeToString([]byte(strings.Join(kvs, constant.HeadersSeg)))
 	}
 
 	tsLink, _ := url.Parse(basePath)
@@ -140,7 +139,7 @@ func ProxyTs(c *gin.Context) {
 
 	headerStr := string(headerBytes)
 	if headerStr != "" {
-		kvs := strings.Split(headerStr, HeadersSeg)
+		kvs := strings.Split(headerStr, constant.HeadersSeg)
 		for i := 0; i+1 < len(kvs); i += 2 {
 			header.Set(kvs[i], kvs[i+1])
 		}

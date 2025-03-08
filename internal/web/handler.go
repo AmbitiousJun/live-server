@@ -73,7 +73,7 @@ func HandleLive(c *gin.Context) {
 		Format:      c.Query("format"),
 		ClientIp:    c.ClientIP(),
 		ClientHost:  https.ClientRequestHost(c),
-		Headers:     c.Request.Header,
+		Headers:     resolveHeaders(c.Query("headers")),
 	})
 	if err != nil {
 		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)
