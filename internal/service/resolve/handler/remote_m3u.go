@@ -15,7 +15,7 @@ import (
 
 func init() {
 	resolve.RegisterHandler(&remoteM3UHandler{
-		cc: https.NewCacheClient(1000, time.Minute*10),
+		cc: https.NewCacheClient(1000, time.Hour),
 	})
 }
 
