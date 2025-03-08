@@ -13,13 +13,13 @@ const (
 // cacheMap 存储订阅列表缓存
 //
 // key: 订阅列表 md5 => value: 整理好的订阅列表 map
-var cacheMap = map[string]map[string]Info{}
+var cacheMap = map[string]map[string][]Info{}
 
 // opCacheMutex 列表缓存并发控制
 var opCacheMutex = sync.RWMutex{}
 
 // getCache 根据文本的原始内容获取缓存
-func getCache(content string) (map[string]Info, bool) {
+func getCache(content string) (map[string][]Info, bool) {
 	if MaxCacheSize < 1 {
 		return nil, false
 	}
@@ -37,7 +37,7 @@ func getCache(content string) (map[string]Info, bool) {
 }
 
 // updateCache 更新缓存
-func updateCache(content string, infoMap map[string]Info) {
+func updateCache(content string, infoMap map[string][]Info) {
 	if MaxCacheSize < 1 {
 		return
 	}

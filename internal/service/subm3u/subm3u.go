@@ -16,7 +16,7 @@ var (
 )
 
 // ReadContent 将 m3u8 原始文件整理成 Info 信息
-func ReadContent(content string) (map[string]Info, error) {
+func ReadContent(content string) (map[string][]Info, error) {
 	if cache, ok := getCache(content); ok {
 		return cache, nil
 	}
@@ -31,7 +31,7 @@ func ReadContent(content string) (map[string]Info, error) {
 	}
 
 	// 遍历文本, 每两行合成一个信息
-	res := make(map[string]Info)
+	res := make(map[string][]Info)
 	for scanner.Scan() {
 		firstLine := scanner.Text()
 		if !strings.HasPrefix(firstLine, "#EXTINF") {
@@ -44,9 +44,9 @@ func ReadContent(content string) (map[string]Info, error) {
 		}
 		info.Url = scanner.Text()
 
-		res[info.TvgName] = info
-		res[info.TvgId] = info
-		res[info.CustomName] = info
+		res[info.TvgName] = append(res[info.TvgName], info)
+		res[info.TvgId] = append(res[info.TvgId], info)
+		res[info.CustomName] = append(res[info.CustomName], info)
 	}
 
 	updateCache(content, res)
