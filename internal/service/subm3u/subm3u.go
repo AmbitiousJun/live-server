@@ -44,9 +44,14 @@ func ReadContent(content string) (map[string][]Info, error) {
 		}
 		info.Url = scanner.Text()
 
-		res[info.TvgName] = append(res[info.TvgName], info)
-		res[info.TvgId] = append(res[info.TvgId], info)
-		res[info.CustomName] = append(res[info.CustomName], info)
+		distinctSet := make(map[string]struct{})
+		distinctSet[info.TvgName] = struct{}{}
+		distinctSet[info.TvgId] = struct{}{}
+		distinctSet[info.CustomName] = struct{}{}
+
+		for name := range distinctSet {
+			res[name] = append(res[name], info)
+		}
 	}
 
 	updateCache(content, res)
