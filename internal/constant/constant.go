@@ -1,8 +1,9 @@
 package constant
 
 const (
-	Version  = "v1.16.6"                                     // 版本号
-	RepoAddr = "https://github.com/AmbitiousJun/live-server" // 仓库地址
+	Version    = "v1.16.6"                                     // 版本号
+	RepoAddr   = "https://github.com/AmbitiousJun/live-server" // 仓库地址
+	HeadersSeg = "[[[:]]]"                                     // 分割请求头的分隔符
 )
 
 const (

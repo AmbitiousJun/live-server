@@ -94,6 +94,12 @@ func (h *huyaGoodIptvHandler) SupportM3UProxy() bool {
 	return false
 }
 
+// SupportCustomHeaders 是否支持自定义请求头
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (h *huyaGoodIptvHandler) SupportCustomHeaders() bool {
+	return false
+}
+
 // Enabled 标记处理器是否是启用状态
 func (h *huyaGoodIptvHandler) Enabled() bool {
 	return true

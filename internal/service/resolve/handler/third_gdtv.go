@@ -16,7 +16,7 @@ func init() {
 type thirdGdtvHandler struct{}
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
-func (thirdGdtvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
+func (h *thirdGdtvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	u := fmt.Sprintf("https://php.17186.eu.org/gdtv/web/%s.m3u8", params.ChName)
 
 	// 无需代理
@@ -43,12 +43,12 @@ func (thirdGdtvHandler) Handle(params resolve.HandleParams) (resolve.HandleResul
 }
 
 // Name 处理器名称
-func (thirdGdtvHandler) Name() string {
+func (h *thirdGdtvHandler) Name() string {
 	return "third_gdtv"
 }
 
 // HelpDoc 处理器说明文档
-func (thirdGdtvHandler) HelpDoc() string {
+func (h *thirdGdtvHandler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 第三方的荔枝网代理接口，原地址：https://php.17186.eu.org/gdtv/web/{频道名称}.m3u8")
 	sb.WriteString("\n2. 该处理器不保证可用性，只是简单地绕过 UA 限制进行代理，部分 ip 会被第三方接口屏蔽无法使用")
@@ -58,11 +58,17 @@ func (thirdGdtvHandler) HelpDoc() string {
 
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
-func (thirdGdtvHandler) SupportM3UProxy() bool {
+func (h *thirdGdtvHandler) SupportM3UProxy() bool {
 	return true
 }
 
+// SupportCustomHeaders 是否支持自定义请求头
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (h *thirdGdtvHandler) SupportCustomHeaders() bool {
+	return false
+}
+
 // Enabled 标记处理器是否是启用状态
-func (thirdGdtvHandler) Enabled() bool {
+func (h *thirdGdtvHandler) Enabled() bool {
 	return false
 }

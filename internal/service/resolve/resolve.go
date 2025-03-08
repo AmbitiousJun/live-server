@@ -70,13 +70,18 @@ type Handler interface {
 	// 如果返回 true, 会自动在帮助文档中加入标记
 	SupportM3UProxy() bool
 
+	// SupportCustomHeaders 是否支持自定义请求头
+	//
+	// 如果返回 true, 会自动在帮助文档中加入标记
+	SupportCustomHeaders() bool
+
 	// Enabled 标记处理器是否是启用状态
 	Enabled() bool
 }
 
 // RegisterHandler 注册处理器到内存中
 func RegisterHandler(handler Handler) {
-	if handler == nil {
+	if handler == nil || !handler.Enabled() {
 		return
 	}
 	handlerMapOpMutex.Lock()
@@ -126,7 +131,7 @@ func HelpDoc() string {
 
 	// 接口调用相关
 	sb.WriteString("\n<strong>接口调用说明：</strong>")
-	sb.WriteString("\n请前往配置页进行配置: <a target=\"_blank\" href=\"${clientOrigin}/config?secret={程序密钥}\">${clientOrigin}/config?secret={程序密钥}</a>")
+	sb.WriteString("\n请前往配置页进行配置: <a target=\"_blank\" href=\"${clientOrigin}/config?secret=\">${clientOrigin}/config?secret={程序密钥}</a>")
 	sb.WriteString("\n")
 
 	// 代理参数
@@ -138,6 +143,13 @@ func HelpDoc() string {
 	sb.WriteString("\n5. 开启切片代理时，会消耗服务器流量")
 	sb.WriteString("\n6. 代理功能可以正常使用的前提是服务器的网络环境是能够和直播源进行连通的")
 	sb.WriteString("\n7. 举例：${clientOrigin}/handler/345/ch/cctv13?proxy_m3u=1&proxy_ts=1&ts_proxy_mode=custom&format=1")
+	sb.WriteString("\n")
+
+	// 自定义请求头
+	sb.WriteString("\n<strong>自定义请求头说明：</strong>")
+	sb.WriteString("\n1. 如果处理器支持自定义请求头, 则可以在调用处理器时传递 headers 参数进行自定义")
+	sb.WriteString("\n2. headers 格式: key1[[[:]]]value1[[[:]]]key2[[[:]]]value2")
+	sb.WriteString("\n3. 举例：${clientOrigin}/handler/raw_m3u/ch/1?url_env=test_ch&proxy_m3u=1&proxy_ts=1&headers=Referer[[[:]]]https://www.baidu.com[[[:]]]User-Agent[[[:]]]okhttp")
 	sb.WriteString("\n")
 
 	// 自定义切片代理接口
@@ -166,6 +178,9 @@ func HelpDoc() string {
 		sb.WriteString(name)
 		if handler.SupportM3UProxy() {
 			sb.WriteString("\n【该处理器支持 M3U 代理】")
+		}
+		if handler.SupportCustomHeaders() {
+			sb.WriteString("\n【该处理器支持自定义 headers】")
 		}
 		sb.WriteString("\n处理器说明：")
 		sb.WriteString(handler.HelpDoc())

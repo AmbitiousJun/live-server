@@ -112,6 +112,9 @@ func (f *fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult,
 	u.RawQuery = q.Encode()
 	header := make(http.Header)
 	header.Set("Token", token)
+	header.Set("fengshows-client", "app(ios,5041701);iPhone11,8;16.1.2")
+	header.Set("client-lang", "zh-CN")
+	header.Set("User-Agent", "FengWatch/5.4.17 (iPhone; iOS 16.1.2; Scale/2.00)")
 	_, resp, err := https.Request(http.MethodGet, u.String(), header, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求失败: %s", err)
@@ -148,13 +151,19 @@ func (f *fengHandler) HelpDoc() string {
 	sb.WriteString("\n4. 程序每隔 6 小时自动刷新 token")
 	sb.WriteString("\n5. 支持的频道: fhzw(凤凰中文)、fhzx(凤凰资讯)、fhxg(凤凰香港)")
 	sb.WriteString("\n6. 该处理器设置了请求速率限制, 每分钟允许请求 6 次，仅自用不适合分享，请避免滥用")
-	sb.WriteString("\n7. 如不会自己抓 token，可以在此页面：<a target=\"_blank\" href=\"${clientOrigin}/feng/auth?secret={程序密钥}\">${clientOrigin}/feng/auth?secret={程序密钥}</a> 使用手机号登录授权获取，不保证可用性，有问题可以到 issue 区反馈")
+	sb.WriteString("\n7. 如不会自己抓 token，可以在此页面：<a target=\"_blank\" href=\"${clientOrigin}/feng/auth?secret=\">${clientOrigin}/feng/auth?secret={程序密钥}</a> 使用手机号登录授权获取，不保证可用性，有问题可以到 issue 区反馈")
 	return sb.String()
 }
 
 // SupportProxy 是否支持 m3u 代理
 // 如果返回 true, 会自动在帮助文档中加入标记
 func (f *fengHandler) SupportM3UProxy() bool {
+	return false
+}
+
+// SupportCustomHeaders 是否支持自定义请求头
+// 如果返回 true, 会自动在帮助文档中加入标记
+func (f *fengHandler) SupportCustomHeaders() bool {
 	return false
 }
 
