@@ -13,7 +13,9 @@
       .page-container {
         padding: 20px 10px;
       }
-      .page-container input, .page-container textarea, .page-container .button-group {
+      .page-container input,
+      .page-container textarea,
+      .page-container .button-group {
         margin: 8px 0;
       }
       .env-wrap .env-value {
@@ -60,6 +62,7 @@
             <textarea
               class="form-control env-value"
               rows="6"
+              style="overflow: hidden; resize: none"
               placeholder="在此输入想更新的 value, 通过查询得到的值也会显示在此"
             ></textarea>
           </div>
@@ -131,10 +134,38 @@
       };
     };
 
+    // 根据文本框内容自动调整环境变量框的高度
+    const autoResizeEnvValueTextarea = (initEvent = false) => {
+      const textarea = document.querySelector(".env-wrap .env-value");
+
+      // 核心调整函数
+      const autoResize = () => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      };
+
+      if (initEvent) {
+        // 输入事件监听
+        textarea.addEventListener("input", autoResize);
+
+        // 窗口尺寸变化监听（带防抖）
+        let resizeTimer;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(autoResize, 150);
+        });
+      }
+
+      // 初始化执行
+      autoResize();
+    };
+
     window.onload = () => {
       // 设置程序密钥
       const { secret } = getBaseParams();
       document.querySelector(".page-container .secret").value = secret;
+
+      autoResizeEnvValueTextarea(true);
     };
 
     // 获取输入框的值
@@ -187,6 +218,7 @@
         })
         .then((respText) => {
           setInputValue(".env-wrap .env-value", respText);
+          autoResizeEnvValueTextarea(false);
         })
         .catch((err) => {
           alert(`查询失败: ${err}`);
