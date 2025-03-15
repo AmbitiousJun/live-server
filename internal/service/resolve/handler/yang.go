@@ -27,7 +27,7 @@ func init() {
 	y.reqHeaders = make(http.Header)
 	y.reqHeaders.Set("User-Agent", "okhttp")
 	y.subC = https.NewCacheClient(1, time.Hour)
-	y.chC = https.NewCacheClient(50, time.Minute*30)
+	y.chC = https.NewCacheClient(50, time.Minute*10)
 	resolve.RegisterHandler(y)
 }
 
