@@ -2,19 +2,12 @@ package handler
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
-	"github.com/AmbitiousJun/live-server/internal/service/subm3u"
-	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
-	"github.com/AmbitiousJun/live-server/internal/util/strs"
 )
 
 func init() {
@@ -25,6 +18,7 @@ func init() {
 
 // remoteM3UHandler 远程 m3u8 直播源处理器
 type remoteM3UHandler struct {
+	resolve.CommonM3U8
 	cc *https.CacheClient
 }
 
@@ -40,40 +34,15 @@ func (h *remoteM3UHandler) Handle(params resolve.HandleParams) (resolve.HandleRe
 	}
 
 	// 请求远程 m3u 文本
-	_, resp, err := h.cc.Request(http.MethodGet, url, params.Headers, nil, true)
+	infos, err := h.ResolveSub(h.cc, url, params.Headers)
 	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("请求远程地址失败: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// 解析文本内容
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("读取远程响应失败: %v", err)
-	}
-	infos, err := subm3u.ReadContent(string(bodyBytes))
-	if err != nil {
-		return resolve.HandleResult{}, fmt.Errorf("解析远程响应失败: %v, 原始响应: %s", err, string(bodyBytes))
+		return resolve.HandleResult{}, fmt.Errorf("解析订阅地址失败: %v", err)
 	}
 
 	// 获取用户请求的频道
-	destInfos, ok := infos[params.ChName]
-	if !ok {
-		return resolve.HandleResult{}, fmt.Errorf("匹配频道名称失败: %s, 请检查远程地址是否有效", params.ChName)
-	}
-
-	// 根据 format 参数筛选出目标直播源
-	resInfo := destInfos[0]
-	formatIdx, err := strconv.Atoi(params.Format)
-	if strs.AllNotEmpty(params.Format) && err != nil {
-		log.Printf(colors.ToYellow("format 索引解析失败: %v, 有效范围: [1, %d], 本次请求使用默认值"), err, len(destInfos))
-	}
-	if err == nil {
-		formatIdx--
-		if formatIdx < 0 || formatIdx >= len(destInfos) {
-			return resolve.HandleResult{}, fmt.Errorf("format 索引传递错误, 有效范围: [1, %d]", len(destInfos))
-		}
-		resInfo = destInfos[formatIdx]
+	resInfo, err := h.MatchChannel(infos, params.ChName, params.Format)
+	if err != nil {
+		return resolve.HandleResult{}, fmt.Errorf("匹配频道失败: %v", err)
 	}
 
 	return resolve.M3U8Result(resInfo.Url, params)
