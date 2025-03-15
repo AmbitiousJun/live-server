@@ -32,3 +32,14 @@ func FindEnv(c *gin.Context) {
 	}
 	c.String(http.StatusNotFound, "环境变量不存在")
 }
+
+// DeleteEnv 删除环境变量
+func DeleteEnv(c *gin.Context) {
+	key := c.PostForm("key")
+	if strs.AnyEmpty(key) {
+		c.String(http.StatusBadRequest, "参数不足")
+		return
+	}
+	Remove(key)
+	c.String(http.StatusOK, "删除成功")
+}

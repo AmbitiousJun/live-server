@@ -20,12 +20,17 @@ func Listen(port int) error {
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 
+	// 核心处理器接口
 	r.GET("/handler/:handler/ch/:channel", HandleLive)
 	r.HEAD("/handler/:handler/ch/:channel", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
 
 	r.GET("/black_ip", secret.Need(HandleAddBlackIp))
+
+	// 环境变量
 	r.POST("/env", secret.Need(env.StoreEnv))
 	r.GET("/env", secret.Need(env.FindEnv))
+	r.DELETE("/env", secret.Need(env.DeleteEnv))
+
 	r.GET("/help", HandleHelpDoc)
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, fmt.Sprintf("live-server@%s => repo: %s", constant.Version, constant.RepoAddr))
