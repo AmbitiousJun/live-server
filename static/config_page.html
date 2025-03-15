@@ -13,8 +13,12 @@
       .page-container {
         padding: 20px 10px;
       }
-      .page-container input {
-        margin-bottom: 8px;
+      .page-container input, .page-container textarea, .page-container .button-group {
+        margin: 8px 0;
+      }
+      .env-wrap .env-value {
+        overflow-wrap: break-word;
+        word-break: break-all;
       }
     </style>
   </head>
@@ -34,27 +38,30 @@
       <div class="env-wrap">
         <h3>环境变量</h3>
         <div class="mb-3 row">
-          <div class="col-sm-5">
+          <div class="col-sm-6">
             <input
               class="form-control env-key"
               type="text"
-              placeholder="请输入 key, 如: feng_token"
+              placeholder="在此输入 key, 如: feng_token"
             />
           </div>
-          <div class="col-sm-5">
-            <input
-              class="form-control env-value"
-              type="text"
-              placeholder="请输入 value"
-            />
-          </div>
-          <div class="col-sm-2">
+          <div class="col-sm-6 button-group">
             <button type="button" class="btn btn-success" onclick="getEnv()">
               查 询
             </button>
             <button type="button" class="btn btn-primary" onclick="setEnv()">
               添 加
             </button>
+            <button type="button" class="btn btn-danger" onclick="delEnv()">
+              删 除
+            </button>
+          </div>
+          <div class="col-sm-12">
+            <textarea
+              class="form-control env-value"
+              rows="6"
+              placeholder="在此输入想更新的 value, 通过查询得到的值也会显示在此"
+            ></textarea>
           </div>
         </div>
       </div>
@@ -70,7 +77,7 @@
               placeholder="请输入要加入黑名单的 ip, 如: 1.1.1.1"
             />
           </div>
-          <div class="col-sm-2">
+          <div class="col-sm-2 button-group">
             <button
               type="button"
               class="btn btn-primary"
@@ -93,7 +100,7 @@
               placeholder="请输入要加入白名单的地域, 如: 广东/佛山/南海"
             />
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-4 button-group">
             <button
               type="button"
               class="btn btn-primary"
@@ -139,10 +146,10 @@
     const setInputValue = (selector = "", value = "") => {
       const target = document.querySelector(selector);
       if (!target) {
-        return
+        return;
       }
       target.value = value;
-    }
+    };
 
     // GET 请求指定地址
     const fetchUrl = (
@@ -171,17 +178,20 @@
 
       const { secret, host } = getBaseParams();
       const url = `${host}/env?key=${envKey}&secret=${secret}`;
-      fetch(url).then(res => {
-        if (!res.ok) {
-          return alert(`查询失败: ${res.statusText}`);
-        }
-        return res.text();
-      }).then(respText => {
-        setInputValue(".env-wrap .env-value", respText);
-      }).catch(err => {
-        alert(`查询失败: ${err}`);
-      })
-    }
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) {
+            return alert(`查询失败: ${res.statusText}`);
+          }
+          return res.text();
+        })
+        .then((respText) => {
+          setInputValue(".env-wrap .env-value", respText);
+        })
+        .catch((err) => {
+          alert(`查询失败: ${err}`);
+        });
+    };
 
     // 设置环境变量
     const setEnv = () => {
@@ -209,6 +219,34 @@
         })
         .catch((err) => {
           alert(`添加失败: ${err}`);
+        });
+    };
+
+    // 删除环境变量
+    const delEnv = () => {
+      const envKey = getInputValue(".env-wrap .env-key");
+      if (envKey === "") {
+        return alert("输入参数不能为空");
+      }
+
+      const { secret, host } = getBaseParams();
+      const url = `${host}/env?secret=${secret}`;
+      const formData = new FormData();
+      formData.append("key", envKey);
+
+      fetch(url, {
+        method: "DELETE",
+        body: formData,
+      })
+        .then((res) => {
+          if (res.ok) {
+            setInputValue(".env-wrap .env-value", "");
+            return alert("删除成功");
+          }
+          alert(`删除失败: ${res.statusText}`);
+        })
+        .catch((err) => {
+          alert(`删除失败: ${err}`);
         });
     };
 
