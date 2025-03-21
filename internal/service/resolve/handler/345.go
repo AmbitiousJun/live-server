@@ -26,95 +26,6 @@ type iptv345Params struct {
 	comment string // 备注
 }
 
-// iptv345ChMap 将调用方传递的频道名称映射为实际的请求参数
-var iptv345ChMap = map[string]iptv345Params{
-	"cctv1":  {tid: "ys", id: "1"},
-	"cctv2":  {tid: "ys", id: "2"},
-	"cctv3":  {tid: "ys", id: "3"},
-	"cctv4":  {tid: "ys", id: "4"},
-	"cctv5":  {tid: "ys", id: "5"},
-	"cctv5p": {tid: "ys", id: "6"},
-	"cctv6":  {tid: "ys", id: "7"},
-	"cctv7":  {tid: "ys", id: "8"},
-	"cctv8":  {tid: "ys", id: "9"},
-	"cctv9":  {tid: "ys", id: "10"},
-	"cctv10": {tid: "ys", id: "11"},
-	"cctv11": {tid: "ys", id: "12"},
-	"cctv12": {tid: "ys", id: "13"},
-	"cctv13": {tid: "ys", id: "14"},
-	"cctv14": {tid: "ys", id: "15"},
-	"cctv15": {tid: "ys", id: "16"},
-	"cctv16": {tid: "ys", id: "17"},
-	"cctv17": {tid: "ys", id: "18"},
-
-	"hunws":    {tid: "ws", id: "1", comment: "湖南卫视"},
-	"jsws":     {tid: "ws", id: "2", comment: "江苏卫视"},
-	"zjws":     {tid: "ws", id: "3", comment: "浙江卫视"},
-	"dfws":     {tid: "ws", id: "4", comment: "东方卫视"},
-	"bjws":     {tid: "ws", id: "5", comment: "北京卫视"},
-	"szws":     {tid: "ws", id: "6", comment: "深圳卫视"},
-	"gdws":     {tid: "ws", id: "7", comment: "广东卫视"},
-	"ahws":     {tid: "ws", id: "8", comment: "安徽卫视"},
-	"dnws":     {tid: "ws", id: "9", comment: "东南卫视"},
-	"hebws":    {tid: "ws", id: "10", comment: "河北卫视"},
-	"hljws":    {tid: "ws", id: "11", comment: "黑龙江卫视"},
-	"hubws":    {tid: "ws", id: "12", comment: "湖北卫视"},
-	"jxws":     {tid: "ws", id: "13", comment: "江西卫视"},
-	"lnws":     {tid: "ws", id: "14", comment: "辽宁卫视"},
-	"hainws":   {tid: "ws", id: "15", comment: "海南卫视"},
-	"sdws":     {tid: "ws", id: "16", comment: "山东卫视"},
-	"scws":     {tid: "ws", id: "17", comment: "四川卫视"},
-	"tjws":     {tid: "ws", id: "18", comment: "天津卫视"},
-	"cqws":     {tid: "ws", id: "19", comment: "重庆卫视"},
-	"gzws":     {tid: "ws", id: "20", comment: "贵州卫视"},
-	"jlws":     {tid: "ws", id: "21", comment: "吉林卫视"},
-	"gxws":     {tid: "ws", id: "22", comment: "广西卫视"},
-	"henws":    {tid: "ws", id: "23", comment: "河南卫视"},
-	"gsws":     {tid: "ws", id: "24", comment: "甘肃卫视"},
-	"qhws":     {tid: "ws", id: "25", comment: "青海卫视"},
-	"ynws":     {tid: "ws", id: "26", comment: "云南卫视"},
-	"nmgws":    {tid: "ws", id: "27", comment: "内蒙古卫视"},
-	"shan1xws": {tid: "ws", id: "28", comment: "山西卫视"},
-	"shan3xws": {tid: "ws", id: "29", comment: "陕西卫视"},
-	"btws":     {tid: "ws", id: "30", comment: "兵团卫视"},
-	"xjws":     {tid: "ws", id: "31", comment: "新疆卫视"},
-	"xzws":     {tid: "ws", id: "32", comment: "西藏卫视"},
-	"nxws":     {tid: "ws", id: "33", comment: "宁夏卫视"},
-	"ybws":     {tid: "ws", id: "34", comment: "延边卫视"},
-	"kbws":     {tid: "ws", id: "35", comment: "康巴卫视"},
-	"dwqws":    {tid: "ws", id: "36", comment: "大湾区卫视"},
-	"gdzj":     {tid: "ws", id: "37", comment: "广东珠江"},
-	"xmws":     {tid: "ws", id: "38", comment: "厦门卫视"},
-	"adws":     {tid: "ws", id: "39", comment: "安多卫视"},
-	"nlws":     {tid: "ws", id: "40", comment: "农林卫视"},
-	"ssws":     {tid: "ws", id: "41", comment: "三沙卫视"},
-
-	"fhzw":    {tid: "gt", id: "1", comment: "凤凰中文"},
-	"fhzx":    {tid: "gt", id: "2", comment: "凤凰资讯"},
-	"fhxg":    {tid: "gt", id: "3", comment: "凤凰香港"},
-	"tvbfc":   {tid: "gt", id: "5", comment: "TVB翡翠"},
-	"tvbwxxw": {tid: "gt", id: "6", comment: "TVB无线新闻"},
-	"tvbplus": {tid: "gt", id: "8", comment: "TVB Plus"},
-	"tvbmz":   {tid: "gt", id: "9", comment: "TVB明珠"},
-	"xgyxxw":  {tid: "gt", id: "11", comment: "香港有线新闻"},
-	"xgyx18":  {tid: "gt", id: "12", comment: "香港有线18"},
-	"nowbg":   {tid: "gt", id: "15", comment: "NOW爆谷"},
-	"nowzb":   {tid: "gt", id: "16", comment: "NOW直播"},
-	"nowxw":   {tid: "gt", id: "17", comment: "NOW新闻"},
-	"nowcj":   {tid: "gt", id: "18", comment: "NOW财经"},
-	"ztxw":    {tid: "gt", id: "43", comment: "中天新闻"},
-	"dsxw":    {tid: "gt", id: "44", comment: "东森新闻"},
-	"dscjxw":  {tid: "gt", id: "45", comment: "东森财经新闻"},
-	"zsxw":    {tid: "gt", id: "46", comment: "中视新闻"},
-	"tsxw":    {tid: "gt", id: "47", comment: "台视新闻"},
-	"slxw":    {tid: "gt", id: "48", comment: "三立新闻"},
-	"msxw":    {tid: "gt", id: "50", comment: "民视新闻"},
-	"hsxw":    {tid: "gt", id: "51", comment: "华视新闻"},
-	"jdsxw":   {tid: "gt", id: "52", comment: "镜电视新闻"},
-	"hyxw":    {tid: "gt", id: "53", comment: "寰宇新闻"},
-	"tvbsxw":  {tid: "gt", id: "54", comment: "TVBS新闻"},
-}
-
 // iptv345Handler 345 直播处理器
 type iptv345Handler struct {
 	cacher *resolve.Cacher[iptv345Params]
@@ -136,6 +47,9 @@ type iptv345Handler struct {
 
 	// requestHeader 请求需要携带的请求头
 	requestHeader http.Header
+
+	// channels 支持的频道列表
+	channels map[string]iptv345Params
 }
 
 func init() {
@@ -164,12 +78,100 @@ func init() {
 		}
 	}()
 
+	ih.channels = map[string]iptv345Params{
+		"cctv1":  {tid: "ys", id: "1"},
+		"cctv2":  {tid: "ys", id: "2"},
+		"cctv3":  {tid: "ys", id: "3"},
+		"cctv4":  {tid: "ys", id: "4"},
+		"cctv5":  {tid: "ys", id: "5"},
+		"cctv5p": {tid: "ys", id: "6"},
+		"cctv6":  {tid: "ys", id: "7"},
+		"cctv7":  {tid: "ys", id: "8"},
+		"cctv8":  {tid: "ys", id: "9"},
+		"cctv9":  {tid: "ys", id: "10"},
+		"cctv10": {tid: "ys", id: "11"},
+		"cctv11": {tid: "ys", id: "12"},
+		"cctv12": {tid: "ys", id: "13"},
+		"cctv13": {tid: "ys", id: "14"},
+		"cctv14": {tid: "ys", id: "15"},
+		"cctv15": {tid: "ys", id: "16"},
+		"cctv16": {tid: "ys", id: "17"},
+		"cctv17": {tid: "ys", id: "18"},
+
+		"hunws":    {tid: "ws", id: "1", comment: "湖南卫视"},
+		"jsws":     {tid: "ws", id: "2", comment: "江苏卫视"},
+		"zjws":     {tid: "ws", id: "3", comment: "浙江卫视"},
+		"dfws":     {tid: "ws", id: "4", comment: "东方卫视"},
+		"bjws":     {tid: "ws", id: "5", comment: "北京卫视"},
+		"szws":     {tid: "ws", id: "6", comment: "深圳卫视"},
+		"gdws":     {tid: "ws", id: "7", comment: "广东卫视"},
+		"ahws":     {tid: "ws", id: "8", comment: "安徽卫视"},
+		"dnws":     {tid: "ws", id: "9", comment: "东南卫视"},
+		"hebws":    {tid: "ws", id: "10", comment: "河北卫视"},
+		"hljws":    {tid: "ws", id: "11", comment: "黑龙江卫视"},
+		"hubws":    {tid: "ws", id: "12", comment: "湖北卫视"},
+		"jxws":     {tid: "ws", id: "13", comment: "江西卫视"},
+		"lnws":     {tid: "ws", id: "14", comment: "辽宁卫视"},
+		"hainws":   {tid: "ws", id: "15", comment: "海南卫视"},
+		"sdws":     {tid: "ws", id: "16", comment: "山东卫视"},
+		"scws":     {tid: "ws", id: "17", comment: "四川卫视"},
+		"tjws":     {tid: "ws", id: "18", comment: "天津卫视"},
+		"cqws":     {tid: "ws", id: "19", comment: "重庆卫视"},
+		"gzws":     {tid: "ws", id: "20", comment: "贵州卫视"},
+		"jlws":     {tid: "ws", id: "21", comment: "吉林卫视"},
+		"gxws":     {tid: "ws", id: "22", comment: "广西卫视"},
+		"henws":    {tid: "ws", id: "23", comment: "河南卫视"},
+		"gsws":     {tid: "ws", id: "24", comment: "甘肃卫视"},
+		"qhws":     {tid: "ws", id: "25", comment: "青海卫视"},
+		"ynws":     {tid: "ws", id: "26", comment: "云南卫视"},
+		"nmgws":    {tid: "ws", id: "27", comment: "内蒙古卫视"},
+		"shan1xws": {tid: "ws", id: "28", comment: "山西卫视"},
+		"shan3xws": {tid: "ws", id: "29", comment: "陕西卫视"},
+		"btws":     {tid: "ws", id: "30", comment: "兵团卫视"},
+		"xjws":     {tid: "ws", id: "31", comment: "新疆卫视"},
+		"xzws":     {tid: "ws", id: "32", comment: "西藏卫视"},
+		"nxws":     {tid: "ws", id: "33", comment: "宁夏卫视"},
+		"ybws":     {tid: "ws", id: "34", comment: "延边卫视"},
+		"kbws":     {tid: "ws", id: "35", comment: "康巴卫视"},
+		"dwqws":    {tid: "ws", id: "36", comment: "大湾区卫视"},
+		"gdzj":     {tid: "ws", id: "37", comment: "广东珠江"},
+		"xmws":     {tid: "ws", id: "38", comment: "厦门卫视"},
+		"adws":     {tid: "ws", id: "39", comment: "安多卫视"},
+		"nlws":     {tid: "ws", id: "40", comment: "农林卫视"},
+		"ssws":     {tid: "ws", id: "41", comment: "三沙卫视"},
+
+		"fhzw":    {tid: "gt", id: "1", comment: "凤凰中文"},
+		"fhzx":    {tid: "gt", id: "2", comment: "凤凰资讯"},
+		"fhxg":    {tid: "gt", id: "3", comment: "凤凰香港"},
+		"tvbfc":   {tid: "gt", id: "5", comment: "TVB翡翠"},
+		"tvbwxxw": {tid: "gt", id: "6", comment: "TVB无线新闻"},
+		"tvbplus": {tid: "gt", id: "8", comment: "TVB Plus"},
+		"tvbmz":   {tid: "gt", id: "9", comment: "TVB明珠"},
+		"xgyxxw":  {tid: "gt", id: "11", comment: "香港有线新闻"},
+		"xgyx18":  {tid: "gt", id: "12", comment: "香港有线18"},
+		"nowbg":   {tid: "gt", id: "15", comment: "NOW爆谷"},
+		"nowzb":   {tid: "gt", id: "16", comment: "NOW直播"},
+		"nowxw":   {tid: "gt", id: "17", comment: "NOW新闻"},
+		"nowcj":   {tid: "gt", id: "18", comment: "NOW财经"},
+		"ztxw":    {tid: "gt", id: "43", comment: "中天新闻"},
+		"dsxw":    {tid: "gt", id: "44", comment: "东森新闻"},
+		"dscjxw":  {tid: "gt", id: "45", comment: "东森财经新闻"},
+		"zsxw":    {tid: "gt", id: "46", comment: "中视新闻"},
+		"tsxw":    {tid: "gt", id: "47", comment: "台视新闻"},
+		"slxw":    {tid: "gt", id: "48", comment: "三立新闻"},
+		"msxw":    {tid: "gt", id: "50", comment: "民视新闻"},
+		"hsxw":    {tid: "gt", id: "51", comment: "华视新闻"},
+		"jdsxw":   {tid: "gt", id: "52", comment: "镜电视新闻"},
+		"hyxw":    {tid: "gt", id: "53", comment: "寰宇新闻"},
+		"tvbsxw":  {tid: "gt", id: "54", comment: "TVBS新闻"},
+	}
+
 	resolve.RegisterHandler(ih)
 }
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
 func (ih *iptv345Handler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
-	reqParams, ok := iptv345ChMap[params.ChName]
+	reqParams, ok := ih.channels[params.ChName]
 	if !ok {
 		return resolve.HandleResult{}, fmt.Errorf("不支持的频道: [%s]", params.ChName)
 	}
@@ -219,7 +221,7 @@ func (ih *iptv345Handler) HelpDoc() string {
 	sb.WriteString("\n4. 连续播放一段时间可能会发生断流, 需要重新加载")
 
 	chs := []string{}
-	for k, v := range iptv345ChMap {
+	for k, v := range ih.channels {
 		cur := k
 		if v.comment != "" {
 			cur += "（" + v.comment + "）"

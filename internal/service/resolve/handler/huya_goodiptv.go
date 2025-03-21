@@ -12,27 +12,27 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 )
 
-const (
-
-	// huyaGoodIptvApi json 数据授权地址
-	huyaGoodIptvApi = `https://www.goodiptv.club/huya/${id}?type=json`
-)
-
 func init() {
 	resolve.RegisterHandler(&huyaGoodIptvHandler{
-		cc: https.NewCacheClient(1000, time.Minute*10),
+		jsonApi: "https://www.goodiptv.club/huya/${id}?type=json",
+		cc:      https.NewCacheClient(1000, time.Minute*10),
 	})
 }
 
 // huyaGoodIptvHandler 基于 goodiptv 接口的虎牙 flv 直播处理器
 type huyaGoodIptvHandler struct {
+
+	// jsonApi 获取 json 数据的 api 地址
+	jsonApi string
+
+	// cc 缓存请求数据
 	cc *https.CacheClient
 }
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
 func (h *huyaGoodIptvHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	// 请求 json
-	roomRequestUrl := strings.ReplaceAll(huyaGoodIptvApi, "${id}", params.ChName)
+	roomRequestUrl := strings.ReplaceAll(h.jsonApi, "${id}", params.ChName)
 	_, resp, err := h.cc.Request(http.MethodGet, roomRequestUrl, nil, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求远程地址失败: %v", err)
