@@ -13,14 +13,6 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 )
 
-const (
-	// Env_YoutubeCustomFormatEnable 是否允许解析自定义格式
-	Env_YoutubeCustomFormatEnable = "youtube_custom_format_enable"
-
-	// YoutubeResPrefix youtube 资源前缀
-	YoutubeResPrefix = "https://www.youtube.com/watch?v="
-)
-
 // youtubeParams 频道请求参数
 type youtubeParams struct {
 	chId       string // 频道 id
@@ -29,11 +21,22 @@ type youtubeParams struct {
 
 // youtubeHandler Youtube 直播处理器
 type youtubeHandler struct {
+
+	// customFormatEnableEnv 解析自定义格式开关的环境变量名
+	customFormatEnableEnv string
+
+	// chPrefix 频道地址前缀
+	chPrefix string
+
+	// cacher 解析并缓存频道地址的处理器
 	cacher *resolve.Cacher[youtubeParams]
 }
 
 func init() {
-	y := new(youtubeHandler)
+	y := &youtubeHandler{
+		customFormatEnableEnv: "youtube_custom_format_enable",
+		chPrefix:              "https://www.youtube.com/watch?v=",
+	}
 	y.initCacher()
 	resolve.RegisterHandler(y)
 }
@@ -105,7 +108,7 @@ func (y *youtubeHandler) initCacher() {
 		}),
 
 		resolve.WithFetchValue(func(p youtubeParams) (string, error) {
-			res, err := ytdlp.Extract(YoutubeResPrefix+p.chId, p.formatCode)
+			res, err := ytdlp.Extract(y.chPrefix+p.chId, p.formatCode)
 			if err != nil {
 				return "", fmt.Errorf("调用 yt-dlp 失败: %v", err)
 			}
@@ -128,7 +131,7 @@ func (y *youtubeHandler) chooseFormat(wantFmt string) string {
 	res := "95"
 
 	// 判断是否允许自定义
-	enable, ok := env.Get(Env_YoutubeCustomFormatEnable)
+	enable, ok := env.Get(y.customFormatEnableEnv)
 	if !ok || enable != "1" {
 		return res
 	}
