@@ -164,6 +164,13 @@ func HelpDoc() string {
 	sb.WriteString("\n8. 设置 live-server 的环境变量 [custom_ts_proxy_enable] 值为 [1] 使用自定义的代理接口")
 	sb.WriteString("\n")
 
+	// 自定义处理异常视频
+	sb.WriteString("\n<strong>自定义处理异常视频说明：</strong>")
+	sb.WriteString("\n1. 处理器处理异常时，默认会返回 400 错误异常, 播放器会直接停止播放")
+	sb.WriteString("\n2. 如需友好地让客户端知道发生了错误, 可以自己准备一个 mp4 视频文件并托管在任意可访问的 http 服务上, 获得一个类似 [https://test.com/fallback.mp4] 的视频地址")
+	sb.WriteString("\n3. 将视频地址设置到 live-server 的环境变量 [fallback_mp4] 上即可自动生效")
+	sb.WriteString("\n")
+
 	// 处理器文档
 	sb.WriteString("\n<strong>处理器说明：</strong>")
 	handlerMapOpMutex.RLock()
