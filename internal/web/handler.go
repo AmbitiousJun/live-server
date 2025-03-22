@@ -77,6 +77,10 @@ func HandleLive(c *gin.Context) {
 	})
 	if err != nil {
 		log.Printf(colors.ToRed("解析失败, handler: %s, errMsg: %v"), handler.Name(), err)
+		if mp4, ok := GetFallbackMp4Url(); ok {
+			c.Redirect(http.StatusFound, mp4)
+			return
+		}
 		c.String(http.StatusBadRequest, "处理失败: %v", err)
 		return
 	}
