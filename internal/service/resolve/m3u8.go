@@ -71,6 +71,15 @@ func (cm *CommonM3U8) MatchChannel(infos map[string][]subm3u.Info, chName, forma
 	return resInfo, nil
 }
 
+// ChannelSlice 获取频道信息列表中所有可用的频道
+func (cm *CommonM3U8) ChannelSlice(infos map[string][]subm3u.Info) []string {
+	channels := make([]string, 0, len(infos))
+	for chName := range infos {
+		channels = append(channels, chName)
+	}
+	return channels
+}
+
 // M3U8Result 根据处理器参数返回 m3u 地址的处理结果
 func M3U8Result(url string, params HandleParams) (HandleResult, error) {
 	// 如果无需代理, 直接重定向
