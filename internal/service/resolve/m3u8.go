@@ -34,10 +34,12 @@ func (cm *CommonM3U8) ResolveSub(client *https.CacheClient, subAddr string, head
 	// 解析文本内容
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
+		client.RemoveUrlCache(subAddr)
 		return nil, fmt.Errorf("读取远程响应失败: %v", err)
 	}
 	infos, err := subm3u.ReadContent(string(bodyBytes))
 	if err != nil {
+		client.RemoveUrlCache(subAddr)
 		return nil, fmt.Errorf("解析远程响应失败: %v, 原始响应: %s", err, string(bodyBytes))
 	}
 	return infos, nil
