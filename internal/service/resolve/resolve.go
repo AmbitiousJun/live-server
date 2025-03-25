@@ -107,7 +107,7 @@ func HelpDoc() string {
 
 	// 程序说明
 	sb.WriteString("\n<strong>live-server " + constant.Version + " 帮助文档</strong>\n")
-	sb.WriteString("\n仓库地址：" + constant.RepoAddr)
+	sb.WriteString("\n仓库地址：<a href=\"" + constant.RepoAddr + "\" target=\"_blank\">" + constant.RepoAddr + "</a>")
 	sb.WriteString("\n项目说明：本项目仅限个人测试使用，切勿大肆传播！！")
 	sb.WriteString("\n")
 
