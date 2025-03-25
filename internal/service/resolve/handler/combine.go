@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
@@ -42,7 +41,7 @@ type combineHandler struct {
 
 func init() {
 	y := &combineHandler{
-		chSeg:        constant.HeadersSeg,
+		chSeg:        "{{{:}}}",
 		cacheTimeout: time.Second * 10,
 		caches:       make(map[string]combineChCache),
 	}
@@ -111,8 +110,9 @@ func (h *combineHandler) HelpDoc() string {
 	sb.WriteString("\n1. 本处理器作用是聚合多个直播源, 并在客户端请求时随机返回重定向")
 	sb.WriteString("\n2. 先将自定义的多个直播源设置到程序的环境变量中, 变量名称任意, 如: combine_hyxw")
 	sb.WriteString("\n3. 多个源之间使用 " + h.chSeg + " 进行分隔")
-	sb.WriteString("\n4. 频道名称 ch 可任意传递一个非空值")
-	sb.WriteString("\n4. 请求示例: ${clientOrigin}/handler/combine/ch/1?url_env=combine_hyxw")
+	sb.WriteString("\n4. 变量设置示例: ${clientOrigin}/handler/aktv/ch/寰宇新聞台?proxy_m3u=1&proxy_ts=1&ts_proxy_mode=custom$AKTV" + h.chSeg + "${clientOrigin}/handler/youtube/ch/6IquAgfvYmc?proxy_m3u=1&proxy_ts=1&ts_proxy_mode=custom&format=FHD$YT" + h.chSeg + "${clientOrigin}/handler/345/ch/hyxw?proxy_m3u=1&proxy_ts=1&format=1&ts_proxy_mode=custom$345")
+	sb.WriteString("\n5. 频道名称 ch 可任意传递一个非空值")
+	sb.WriteString("\n6. 请求示例: ${clientOrigin}/handler/combine/ch/1?url_env=combine_hyxw")
 	return sb.String()
 }
 
