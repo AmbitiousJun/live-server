@@ -25,7 +25,7 @@ func (cm *CommonM3U8) ResolveSub(client *https.CacheClient, subAddr string, head
 	}
 
 	// 请求 m3u 文本
-	_, resp, err := client.Request(http.MethodGet, subAddr, headers, nil, true)
+	subAddr, resp, err := client.Request(http.MethodGet, subAddr, headers, nil, true)
 	if err != nil {
 		return nil, fmt.Errorf("请求远程地址失败: %v", err)
 	}
