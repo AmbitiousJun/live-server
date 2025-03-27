@@ -108,7 +108,8 @@ func HelpDoc() string {
 	// 程序说明
 	sb.WriteString("\n<strong>live-server " + constant.Version + " 帮助文档</strong>\n")
 	sb.WriteString("\n仓库地址：<a href=\"" + constant.RepoAddr + "\" target=\"_blank\">" + constant.RepoAddr + "</a>")
-	sb.WriteString("\n项目说明：本项目仅限个人测试使用，切勿大肆传播！！")
+	sb.WriteString("\n使用说明：本项目仅限个人测试使用，切勿大肆分享传播！！！")
+	sb.WriteString("\n调用方式：<a href=\"${clientOrigin}/handler/youtube/ch/6IquAgfvYmc?proxy_m3u=1&proxy_ts=1$YT\" target=\"_blank\">${clientOrigin}/handler/{处理器名}/ch/{频道名称}[?{query 参数}][${频道注释}]</a>")
 	sb.WriteString("\n")
 
 	// 程序密钥相关

@@ -9,6 +9,11 @@
         overflow-wrap: break-word;
         word-break: break-all;
       }
+      .container a:link,
+      .container a:visited {
+        color: #1a73e8;
+        text-decoration: none;
+      }
     </style>
   </head>
   <body>
@@ -16,9 +21,12 @@
 
     <script>
       window.onload = () => {
-        const container = document.querySelector('.container');
-        container.innerHTML = container.innerHTML.replace(/\$\{clientOrigin\}/g, location.origin);
-      }
+        const container = document.querySelector(".container");
+        container.innerHTML = container.innerHTML.replace(
+          /\$\{clientOrigin\}/g,
+          location.origin
+        );
+      };
     </script>
   </body>
 </html>
