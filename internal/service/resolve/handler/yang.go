@@ -60,9 +60,13 @@ func (y *yangHandler) Handle(params resolve.HandleParams) (resolve.HandleResult,
 	}
 
 	// 手动请求一次频道地址, 重定向到真实地址并进行缓存
-	finalUrl, _, err := y.chC.Request(http.MethodGet, resInfo.Url, y.reqHeaders, nil, true)
+	finalUrl, resp, err := y.chC.Request(http.MethodGet, resInfo.Url, y.reqHeaders, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求频道地址 %s 失败: %v", resInfo.Url, err)
+	}
+	defer resp.Body.Close()
+	if !https.IsSuccessCode(resp.StatusCode) {
+		return resolve.HandleResult{}, fmt.Errorf("请求频道地址 %s 失败: %s", resInfo.Url, resp.Status)
 	}
 
 	if strings.Contains(finalUrl, y.errorRespSeg) {
