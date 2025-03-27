@@ -13,11 +13,24 @@ import (
 // yangHandler 处理 Yang1989 M3U
 type yangHandler struct {
 	resolve.CommonM3U8
-	serverHost string             // yang 服务器地址
-	m3uAddr    string             // m3u 订阅地址
-	reqHeaders http.Header        // 请求需要携带的请求头
-	subC       *https.CacheClient // 缓存订阅数据的 http 客户端
-	chC        *https.CacheClient // 缓存频道数据的 http 客户端
+
+	// serverHost yang 服务器地址
+	serverHost string
+
+	// m3uAddr m3u 订阅地址
+	m3uAddr string
+
+	// reqHeaders 请求需要携带的请求头
+	reqHeaders http.Header
+
+	// errorRespSeg 远程解析异常的相应片段
+	errorRespSeg string
+
+	// subC 缓存订阅数据的 http 客户端
+	subC *https.CacheClient
+
+	// chC 缓存频道数据的 http 客户端
+	chC *https.CacheClient
 }
 
 func init() {
@@ -26,6 +39,7 @@ func init() {
 	y.m3uAddr = fmt.Sprintf("https://%s/m3u/Gather", y.serverHost)
 	y.reqHeaders = make(http.Header)
 	y.reqHeaders.Set("User-Agent", "okhttp")
+	y.errorRespSeg = "404"
 	y.subC = https.NewCacheClient(1, time.Hour)
 	y.chC = https.NewCacheClient(50, time.Minute*10)
 	resolve.RegisterHandler(y)
@@ -49,6 +63,10 @@ func (y *yangHandler) Handle(params resolve.HandleParams) (resolve.HandleResult,
 	finalUrl, _, err := y.chC.Request(http.MethodGet, resInfo.Url, y.reqHeaders, nil, true)
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求频道地址 %s 失败: %v", resInfo.Url, err)
+	}
+
+	if strings.Contains(finalUrl, y.errorRespSeg) {
+		return resolve.HandleResult{}, fmt.Errorf("频道丢失: %s, 请等待官方修复", params.ChName)
 	}
 
 	return resolve.HandleResult{
