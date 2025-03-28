@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
@@ -35,7 +36,7 @@ type yangHandler struct {
 
 func init() {
 	y := new(yangHandler)
-	y.serverHost = "tv.iill.top"
+	y.serverHost = base64s.MustDecodeString("dHYuaWlsbC50b3A=")
 	y.m3uAddr = fmt.Sprintf("https://%s/m3u/Gather", y.serverHost)
 	y.reqHeaders = make(http.Header)
 	y.reqHeaders.Set("User-Agent", "okhttp")

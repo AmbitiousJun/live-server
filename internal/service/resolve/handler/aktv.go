@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 )
 
 func init() {
 	h := &aktvHandler{
-		host:       "https://aktv.space",
+		host:       base64s.MustDecodeString("aHR0cHM6Ly9ha3R2LnNwYWNl"),
 		errorTsSeg: "error",
 		cc:         https.NewCacheClient(1, time.Hour*2),
 	}

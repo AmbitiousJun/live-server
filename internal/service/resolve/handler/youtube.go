@@ -10,6 +10,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 )
 
@@ -35,7 +36,7 @@ type youtubeHandler struct {
 func init() {
 	y := &youtubeHandler{
 		customFormatEnableEnv: "youtube_custom_format_enable",
-		chPrefix:              "https://www.youtube.com/watch?v=",
+		chPrefix:              base64s.MustDecodeString("aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj0="),
 	}
 	y.initCacher()
 	resolve.RegisterHandler(y)
