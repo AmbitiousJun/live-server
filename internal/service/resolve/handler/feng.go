@@ -11,6 +11,7 @@ import (
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 	"github.com/AmbitiousJun/live-server/internal/util/ratelimits"
@@ -19,8 +20,8 @@ import (
 func init() {
 	f := &fengHandler{
 		tokenEnv:      "feng_token",
-		authUrl:       "https://m.fengshows.com/api/v3/hub/live/auth-url?live_qa=FHD",
-		authUpdateUrl: "http://m.fengshows.com/user/oauth/update",
+		authUrl:       base64s.MustDecodeString("aHR0cHM6Ly9tLmZlbmdzaG93cy5jb20vYXBpL3YzL2h1Yi9saXZlL2F1dGgtdXJsP2xpdmVfcWE9RkhE"),
+		authUpdateUrl: base64s.MustDecodeString("aHR0cDovL20uZmVuZ3Nob3dzLmNvbS91c2VyL29hdXRoL3VwZGF0ZQ=="),
 		numBucket:     ratelimits.NewBucket(1, time.Second*10, 3),
 		rateBucket:    ratelimits.NewBucket(1, time.Millisecond*2500, 1),
 		channels: map[string]string{

@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/jsons"
 )
 
 func init() {
 	resolve.RegisterHandler(&huyaGoodIptvHandler{
-		jsonApi: "https://www.goodiptv.club/huya/${id}?type=json",
+		jsonApi: base64s.MustDecodeString("aHR0cHM6Ly93d3cuZ29vZGlwdHYuY2x1Yi9odXlhLyR7aWR9P3R5cGU9anNvbg=="),
 		cc:      https.NewCacheClient(1000, time.Minute*10),
 	})
 }
