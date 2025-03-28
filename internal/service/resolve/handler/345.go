@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
 	"github.com/AmbitiousJun/live-server/internal/util/strs"
@@ -29,6 +29,9 @@ type iptv345Params struct {
 // iptv345Handler 345 直播处理器
 type iptv345Handler struct {
 	cacher *resolve.Cacher[iptv345Params]
+
+	// serverHost 服务器地址
+	serverHost string
 
 	// sessionCli 缓存指定 session 的 m3u8
 	sessionCli *https.CacheClient
@@ -55,16 +58,14 @@ type iptv345Handler struct {
 func init() {
 	ih := new(iptv345Handler)
 	ih.initCacher()
+	ih.serverHost = base64s.MustDecodeString("aHR0cHM6Ly9pcHR2MzQ1LmNvbQ==")
 	ih.playUriSeg = "{{,}}"
 
-	bytes, _ := base64.StdEncoding.DecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIHN0cmluZyA9ICIke3N0cmluZ30iOwoKICAgIGZ1bmN0aW9uIGRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIG8xLCBvMiwgbzMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwgYWMgPSAwLCBkZWMgPSAiIiwgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YQogICAgICAgIH0KICAgICAgICBkYXRhICs9ICIiOwogICAgICAgIGRvIHsKICAgICAgICAgICAgaDEgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDIgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDMgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDQgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgYml0cyA9IGgxIDw8IDE4IHwgaDIgPDwgMTIgfCBoMyA8PCA2IHwgaDQ7CiAgICAgICAgICAgIG8xID0gYml0cyA+PiAxNiAmIDI1NTsKICAgICAgICAgICAgbzIgPSBiaXRzID4+IDggJiAyNTU7CiAgICAgICAgICAgIG8zID0gYml0cyAmIDI1NTsKICAgICAgICAgICAgaWYgKGgzID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShvMSkKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChoNCA9PSA2NCkgewogICAgICAgICAgICAgICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKG8xLCBvMikKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUobzEsIG8yLCBvMykKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0gd2hpbGUgKGkgPCBkYXRhLmxlbmd0aCk7CiAgICAgICAgZGVjID0gdG1wX2Fyci5qb2luKCIiKTsKICAgICAgICByZXR1cm4gZGVjCiAgICB9CgogICAgZnVuY3Rpb24gZXh0cmFjdFRva2VuTmFtZXMoeGFjID0gJycpIHsKICAgICAgICBjb25zdCBoa2VuUmVzID0geGFjLm1hdGNoKC91cmkgPSBiZGVjb2RldlwodXJpLChbXlwpXSopXCkvaSk7CiAgICAgICAgaWYgKCFoa2VuUmVzIHx8IGhrZW5SZXMubGVuZ3RoIDwgMikgewogICAgICAgICAgICByZXR1cm4geyBlcnI6IGB4YWM6IGhrZW4g5oiq5Y+W5byC5bi4OiAke2hrZW5SZXN9YCB9OwogICAgICAgIH0KCiAgICAgICAgY29uc3QgdG9rZW5SZXMgPSB4YWMubWF0Y2goL3VyaSA9IHVyaS5yZXBsYWNlXCgidG9rZW49IlwrKFteLF0qKSwgInRva2VuPSJcKyhbXlwpXSopXCkvaSk7CiAgICAgICAgaWYgKCF0b2tlblJlcyB8fCB0b2tlblJlcy5sZW5ndGggPCAzKSB7CiAgICAgICAgICAgIHJldHVybiB7IGVycjogYHhhYzogdG9rZW4g5oiq5Y+W5byC5bi4OiAke3Rva2VuUmVzfWAgfTsKICAgICAgICB9CgogICAgICAgIHJldHVybiB7IGhrZW46IGhrZW5SZXNbMV0sIGhrZW5zOiB0b2tlblJlc1sxXSwgdG9rZW46IHRva2VuUmVzWzJdIH07CiAgICB9CgogICAgdmFyIGtleSA9ICJpcHR2LmNvbSI7CiAgICBzdHJpbmcgPSBkZWNvZGUoc3RyaW5nKTsKICAgIGxlbiA9IGtleS5sZW5ndGg7CiAgICBjb2RlID0gIiI7CiAgICBmb3IgKGkgPSAwOyBpIDwgc3RyaW5nLmxlbmd0aDsgaSsrKSB7CiAgICAgICAgayA9IGkgJSBsZW47CiAgICAgICAgY29kZSArPSBTdHJpbmcuZnJvbUNoYXJDb2RlKHN0cmluZy5jaGFyQ29kZUF0KGkpIF4ga2V5LmNoYXJDb2RlQXQoaykpCiAgICB9CiAgICB2YXIgeGFjID0gZGVjb2RlKGNvZGUpOwogICAgeGFjID0gdW5lc2NhcGUoeGFjKTsKICAgIAogICAgY29uc3QgbWF0Y2hlcyA9IHhhYy5tYXRjaCgvPHNjcmlwdFxiW14+XSo+KC4qPyk8XC9zY3JpcHQ+L2dpKTsKICAgIGxldCBzY3JpcHRFbG0gPSBudWxsOwogICAgZm9yIChjb25zdCBtYXRjaCBvZiBtYXRjaGVzKSB7CiAgICAgICAgaWYgKG1hdGNoLmluY2x1ZGVzKCdqb2luJykpIHsKICAgICAgICAgICAgc2NyaXB0RWxtID0gbWF0Y2g7CiAgICAgICAgICAgIGJyZWFrOwogICAgICAgIH0KICAgIH0KICAgIGlmICghc2NyaXB0RWxtKSB7CiAgICAgICAgcmV0dXJuIHsgZXJyOiBgeGFjIOaIquWPluW8guW4uDogJHttYXRjaGVzfWAgfTsKICAgIH0KCiAgICBjb25zdCB0b2tlbk5hbWVzID0gZXh0cmFjdFRva2VuTmFtZXMoeGFjKSB8fCB7fTsKICAgIGlmICh0b2tlbk5hbWVzLmVycikgewogICAgICAgIHJldHVybiB7IGVycjogYOino+aekCB0b2tlbiDlj5jph4/lkI3np7DlpLHotKU6ICR7dG9rZW5OYW1lcy5lcnJ9YCB9OwogICAgfQoKICAgIGNvbnN0IHNjcmlwdCA9IHNjcmlwdEVsbS5yZXBsYWNlQWxsKC88XC8/c2NyaXB0Pi9nLCAnJyk7CiAgICBldmFsKHNjcmlwdCk7CiAgICByZXR1cm4geyBoa2VuOiBldmFsKHRva2VuTmFtZXNbJ2hrZW4nXSksIGhrZW5zOiBldmFsKHRva2VuTmFtZXNbJ2hrZW5zJ10pLCB0b2tlbjogZXZhbCh0b2tlbk5hbWVzWyd0b2tlbiddKSB9Owp9KSgp`)
-	ih.decodeTokenScript = string(bytes)
-
-	bytes, _ = base64.StdEncoding.DecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIGNvbnN0IGhrZW4gPSAiJHtoa2VufSI7CiAgICBjb25zdCBoa2VucyA9ICIke2hrZW5zfSI7CiAgICBjb25zdCB0b2tlbiA9ICIke3Rva2VufSI7CiAgICBsZXQgdXJpID0gIiR7dXJpfSI7CgogICAgZnVuY3Rpb24gYmRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIGExLCBhMiwgYTMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwKICAgICAgICBhYyA9IDAsCiAgICAgICAgZGVjID0gIiIsCiAgICAgICAgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YTsKICAgICAgICB9CiAgICAgICAgZGF0YSArPSAnJzsKICAgICAgICBkbyB7CiAgICAgICAgICAgIGgxID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGgyID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGgzID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGg0ID0ga2V5U3RyLmluZGV4T2YoZGF0YS5jaGFyQXQoaSsrKSk7CiAgICAgICAgICAgIGJpdHMgPSBoMSA8PCAxOCB8IGgyIDw8IDEyIHwgaDMgPDwgNiB8IGg0OwogICAgICAgICAgICBhMSA9IGJpdHMgPj4gMTYgJiAweGZmOwogICAgICAgICAgICBhMiA9IGJpdHMgPj4gOCAmIDB4ZmY7CiAgICAgICAgICAgIGEzID0gYml0cyAmIDB4ZmY7CiAgICAgICAgICAgIGlmIChoMyA9PSA2NCkgewogICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoYTEpOwogICAgICAgICAgICB9IGVsc2UgaWYgKGg0ID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShhMSwgYTIpOwogICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoYTEsIGEyLCBhMyk7CiAgICAgICAgICAgIH0KICAgICAgICB9IHdoaWxlIChpIDwgZGF0YS5sZW5ndGgpOwogICAgICAgIGRlYyA9IHRtcF9hcnIuam9pbignJyk7CiAgICAgICAgcmV0dXJuIGRlYzsKICAgIH0KCiAgICBmdW5jdGlvbiBiZGVjb2RlYihzdHIsa2V5KSB7CiAgICAgICAgc3RyaW5nID0gYmRlY29kZShzdHIpOwogICAgICAgIGxlbiA9IGtleS5sZW5ndGg7CiAgICAgICAgY29kZSA9ICIiOwogICAgICAgIGZvciAoaSA9IDA7IGkgPCBzdHJpbmcubGVuZ3RoOyBpKyspIHsKICAgICAgICBrID0gaSAlIGxlbjsKICAgICAgICBjb2RlICs9IFN0cmluZy5mcm9tQ2hhckNvZGUoc3RyaW5nLmNoYXJDb2RlQXQoaSkgXiBrZXkuY2hhckNvZGVBdChrKSk7CiAgICAgICAgfQogICAgICAgIHN0cmEgPSBiZGVjb2RlKGNvZGUpOwogICAgICAgIHJldHVybiBzdHJhOwogICAgfQoKICAgIHVyaSA9IHVyaS5zcGxpdCgiIikucmV2ZXJzZSgpLmpvaW4oIiIpOwogICAgdXJpID0gYmRlY29kZWIodXJpLGhrZW4pOwogICAgdXJpID0gdXJpLnJlcGxhY2UoInRva2VuPTEyMyIsICJ0b2tlbj0iK3Rva2VuKTsKICAgIHVyaSA9IHVyaS5yZXBsYWNlKCJ0b2tlbj0iK2hrZW5zLCAidG9rZW49Iit0b2tlbik7CiAgICB1cmkgPSB1cmkucmVwbGFjZShoa2VuLCAiIik7CiAgICByZXR1cm4gdXJpOwp9KSgp`)
-	ih.decodePlayUriScript = string(bytes)
+	ih.decodeTokenScript = base64s.MustDecodeString(`KGZ1bmN0aW9uKCkgewoKICAgIHN0cmluZyA9ICIke3N0cmluZ30iOwoKICAgIGZ1bmN0aW9uIGRlY29kZShkYXRhKSB7CiAgICAgICAgdmFyIGtleVN0ciA9ICJBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OSsvPSI7CiAgICAgICAgdmFyIG8xLCBvMiwgbzMsIGgxLCBoMiwgaDMsIGg0LCBiaXRzLCBpID0gMCwgYWMgPSAwLCBkZWMgPSAiIiwgdG1wX2FyciA9IFtdOwogICAgICAgIGlmICghZGF0YSkgewogICAgICAgICAgICByZXR1cm4gZGF0YQogICAgICAgIH0KICAgICAgICBkYXRhICs9ICIiOwogICAgICAgIGRvIHsKICAgICAgICAgICAgaDEgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDIgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDMgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgaDQgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgICAgICAgYml0cyA9IGgxIDw8IDE4IHwgaDIgPDwgMTIgfCBoMyA8PCA2IHwgaDQ7CiAgICAgICAgICAgIG8xID0gYml0cyA+PiAxNiAmIDI1NTsKICAgICAgICAgICAgbzIgPSBiaXRzID4+IDggJiAyNTU7CiAgICAgICAgICAgIG8zID0gYml0cyAmIDI1NTsKICAgICAgICAgICAgaWYgKGgzID09IDY0KSB7CiAgICAgICAgICAgICAgICB0bXBfYXJyW2FjKytdID0gU3RyaW5nLmZyb21DaGFyQ29kZShvMSkKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIGlmIChoNCA9PSA2NCkgewogICAgICAgICAgICAgICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKG8xLCBvMikKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUobzEsIG8yLCBvMykKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0gd2hpbGUgKGkgPCBkYXRhLmxlbmd0aCk7CiAgICAgICAgZGVjID0gdG1wX2Fyci5qb2luKCIiKTsKICAgICAgICByZXR1cm4gZGVjCiAgICB9CgogICAgZnVuY3Rpb24gZXh0cmFjdFRva2VuTmFtZXMoeGFjID0gJycpIHsKICAgICAgICBjb25zdCB1cmlOYW1lUmVzID0geGFjLm1hdGNoKC9zdGFydFBsYXllclwoKFteXCldKilcKS9pKTsKICAgICAgICBpZiAoIXVyaU5hbWVSZXMgfHwgdXJpTmFtZVJlcy5sZW5ndGggPCAyKSB7CiAgICAgICAgICAgIHJldHVybiB7IGVycjogYHhhYzogdXJpTmFtZSDmiKrlj5blvILluLg6ICR7dXJpTmFtZVJlc31gIH07CiAgICAgICAgfQogICAgICAgIGNvbnN0IHVyaSA9IHVyaU5hbWVSZXNbMV07CgogICAgICAgIGNvbnN0IGhrZW5SZXMgPSB4YWMubWF0Y2gobmV3IFJlZ0V4cChgJHt1cml9ID0gW15cXChdKlxcKCR7dXJpfSwoW15cXCldKilcXClgLCAnaScpKTsKICAgICAgICBpZiAoIWhrZW5SZXMgfHwgaGtlblJlcy5sZW5ndGggPCAyKSB7CiAgICAgICAgICAgIHJldHVybiB7IGVycjogYHhhYzogaGtlbiDmiKrlj5blvILluLg6ICR7aGtlblJlc31gIH07CiAgICAgICAgfQoKICAgICAgICBjb25zdCB0b2tlblJlcyA9IHhhYy5tYXRjaChuZXcgUmVnRXhwKGAke3VyaX0gPSAke3VyaX0ucmVwbGFjZVxcKCJ0b2tlbj0iXFwrKFteLF0qKSwgInRva2VuPSJcXCsoW15cXCldKilcXClgLCAnaScpKTsKICAgICAgICBpZiAoIXRva2VuUmVzIHx8IHRva2VuUmVzLmxlbmd0aCA8IDMpIHsKICAgICAgICAgICAgcmV0dXJuIHsgZXJyOiBgeGFjOiB0b2tlbiDmiKrlj5blvILluLg6ICR7dG9rZW5SZXN9YCB9OwogICAgICAgIH0KCiAgICAgICAgcmV0dXJuIHsgaGtlbjogaGtlblJlc1sxXSwgaGtlbnM6IHRva2VuUmVzWzFdLCB0b2tlbjogdG9rZW5SZXNbMl0gfTsKICAgIH0KCiAgICBmdW5jdGlvbiBleHRyYWN0SGtlbkV4dHJhS2V5KHhhYyA9ICcnKSB7CiAgICAgICAgY29uc3Qga2V5UmVzID0geGFjLm1hdGNoKC9rZXkgPSBrZXlcKyIoW14iXSopIi9pKTsKICAgICAgICBpZiAoIWtleVJlcyB8fCBrZXlSZXMubGVuZ3RoIDwgMikgewogICAgICAgICAgICByZXR1cm4geyBlcnI6IGBoa2VuIGV4dHJhIGtleSDmiKrlj5blvILluLg6ICR7a2V5UmVzfWAgfTsKICAgICAgICB9CiAgICAgICAgcmV0dXJuIHsgdmFsdWU6IGtleVJlc1sxXSB9OwogICAgfQoKICAgIHZhciBrZXkgPSAiaXB0di5jb20iOwogICAgc3RyaW5nID0gZGVjb2RlKHN0cmluZyk7CiAgICBsZW4gPSBrZXkubGVuZ3RoOwogICAgY29kZSA9ICIiOwogICAgZm9yIChpID0gMDsgaSA8IHN0cmluZy5sZW5ndGg7IGkrKykgewogICAgICAgIGsgPSBpICUgbGVuOwogICAgICAgIGNvZGUgKz0gU3RyaW5nLmZyb21DaGFyQ29kZShzdHJpbmcuY2hhckNvZGVBdChpKSBeIGtleS5jaGFyQ29kZUF0KGspKQogICAgfQogICAgdmFyIHhhYyA9IGRlY29kZShjb2RlKTsKICAgIHhhYyA9IHVuZXNjYXBlKHhhYyk7CiAgICAKICAgIGNvbnN0IG1hdGNoZXMgPSB4YWMubWF0Y2goLzxzY3JpcHRcYltePl0qPiguKj8pPFwvc2NyaXB0Pi9naSk7CiAgICBsZXQgc2NyaXB0RWxtID0gbnVsbDsKICAgIGZvciAoY29uc3QgbWF0Y2ggb2YgbWF0Y2hlcykgewogICAgICAgIGlmIChtYXRjaC5pbmNsdWRlcygnam9pbicpKSB7CiAgICAgICAgICAgIHNjcmlwdEVsbSA9IG1hdGNoOwogICAgICAgICAgICBicmVhazsKICAgICAgICB9CiAgICB9CiAgICBpZiAoIXNjcmlwdEVsbSkgewogICAgICAgIHJldHVybiB7IGVycjogYHhhYyDmiKrlj5blvILluLg6ICR7bWF0Y2hlc31gIH07CiAgICB9CiAgICBpZiAoZmFsc2UpIHsKICAgICAgICByZXR1cm4geyBlcnI6IHhhYyB9OwogICAgfQoKICAgIGNvbnN0IHRva2VuTmFtZXMgPSBleHRyYWN0VG9rZW5OYW1lcyh4YWMpIHx8IHt9OwogICAgaWYgKHRva2VuTmFtZXMuZXJyKSB7CiAgICAgICAgcmV0dXJuIHsgZXJyOiBg6Kej5p6QIHRva2VuIOWPmOmHj+WQjeensOWksei0pTogJHt0b2tlbk5hbWVzLmVycn1gIH07CiAgICB9CgogICAgY29uc3QgZXh0cmFLZXkgPSBleHRyYWN0SGtlbkV4dHJhS2V5KHhhYykgfHwge307CiAgICBpZiAoZXh0cmFLZXkuZXJyKSB7CiAgICAgICAgcmV0dXJuIHsgZXJyOiBg6Kej5p6QIGV4dHJhIGtleSDlpLHotKU6ICR7ZXh0cmFLZXkuZXJyfWAgfTsKICAgIH0KCiAgICBjb25zdCBzY3JpcHQgPSBzY3JpcHRFbG0ucmVwbGFjZUFsbCgvPFwvP3NjcmlwdD4vZywgJycpOwogICAgZXZhbChzY3JpcHQpOwogICAgcmV0dXJuIHsgaGtlbjogZXZhbCh0b2tlbk5hbWVzWydoa2VuJ10pLCBoa2VuczogZXZhbCh0b2tlbk5hbWVzWydoa2VucyddKSwgdG9rZW46IGV2YWwodG9rZW5OYW1lc1sndG9rZW4nXSksIGhrZW5FeHRyYUtleTogZXh0cmFLZXkudmFsdWUgfTsKfSkoKQ==`)
+	ih.decodePlayUriScript = base64s.MustDecodeString(`KGZ1bmN0aW9uICgpIHsKICBjb25zdCBoa2VuID0gIiR7aGtlbn0iOwogIGNvbnN0IGhrZW5zID0gIiR7aGtlbnN9IjsKICBjb25zdCB0b2tlbiA9ICIke3Rva2VufSI7CiAgY29uc3QgaGtlbkV4dHJhS2V5ID0gIiR7aGtlbkV4dHJhS2V5fSI7CiAgbGV0IHVyaSA9ICIke3VyaX0iOwoKICBmdW5jdGlvbiBiZGVjb2RlKGRhdGEpIHsKICAgIHZhciBrZXlTdHIgPQogICAgICAiQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODkrLz0iOwogICAgdmFyIGExLAogICAgICBhMiwKICAgICAgYTMsCiAgICAgIGgxLAogICAgICBoMiwKICAgICAgaDMsCiAgICAgIGg0LAogICAgICBiaXRzLAogICAgICBpID0gMCwKICAgICAgYWMgPSAwLAogICAgICBkZWMgPSAiIiwKICAgICAgdG1wX2FyciA9IFtdOwogICAgaWYgKCFkYXRhKSB7CiAgICAgIHJldHVybiBkYXRhOwogICAgfQogICAgZGF0YSArPSAiIjsKICAgIGRvIHsKICAgICAgaDEgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgaDIgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgaDMgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgaDQgPSBrZXlTdHIuaW5kZXhPZihkYXRhLmNoYXJBdChpKyspKTsKICAgICAgYml0cyA9IChoMSA8PCAxOCkgfCAoaDIgPDwgMTIpIHwgKGgzIDw8IDYpIHwgaDQ7CiAgICAgIGExID0gKGJpdHMgPj4gMTYpICYgMHhmZjsKICAgICAgYTIgPSAoYml0cyA+PiA4KSAmIDB4ZmY7CiAgICAgIGEzID0gYml0cyAmIDB4ZmY7CiAgICAgIGlmIChoMyA9PSA2NCkgewogICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKGExKTsKICAgICAgfSBlbHNlIGlmIChoNCA9PSA2NCkgewogICAgICAgIHRtcF9hcnJbYWMrK10gPSBTdHJpbmcuZnJvbUNoYXJDb2RlKGExLCBhMik7CiAgICAgIH0gZWxzZSB7CiAgICAgICAgdG1wX2FyclthYysrXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoYTEsIGEyLCBhMyk7CiAgICAgIH0KICAgIH0gd2hpbGUgKGkgPCBkYXRhLmxlbmd0aCk7CiAgICBkZWMgPSB0bXBfYXJyLmpvaW4oIiIpOwogICAgcmV0dXJuIGRlYzsKICB9CgogIGZ1bmN0aW9uIGJkZWNvZGViKHN0ciwga2V5KSB7CiAgICBzdHJpbmcgPSBiZGVjb2RlKHN0cik7CiAgICBrZXkgKz0gaGtlbkV4dHJhS2V5OwogICAgbGVuID0ga2V5Lmxlbmd0aDsKICAgIGNvZGUgPSAiIjsKICAgIGZvciAoaSA9IDA7IGkgPCBzdHJpbmcubGVuZ3RoOyBpKyspIHsKICAgICAgayA9IGkgJSBsZW47CiAgICAgIGNvZGUgKz0gU3RyaW5nLmZyb21DaGFyQ29kZShzdHJpbmcuY2hhckNvZGVBdChpKSBeIGtleS5jaGFyQ29kZUF0KGspKTsKICAgIH0KICAgIHN0cmEgPSBiZGVjb2RlKGNvZGUpOwogICAgcmV0dXJuIHN0cmE7CiAgfQoKICB1cmkgPSB1cmkuc3BsaXQoIiIpLnJldmVyc2UoKS5qb2luKCIiKTsKICB1cmkgPSBiZGVjb2RlYih1cmksIGhrZW4pOwogIHVyaSA9IHVyaS5yZXBsYWNlKCJ0b2tlbj0xMjMiLCAidG9rZW49IiArIHRva2VuKTsKICB1cmkgPSB1cmkucmVwbGFjZSgidG9rZW49IiArIGhrZW5zLCAidG9rZW49IiArIHRva2VuKTsKICB1cmkgPSB1cmkucmVwbGFjZShoa2VuLCAiIik7CiAgcmV0dXJuIHVyaTsKfSkoKTsK`)
 
 	ih.requestHeader = make(http.Header)
-	ih.requestHeader.Set("Referer", "https://iptv345.com/")
+	ih.requestHeader.Set("Referer", ih.serverHost+"/")
 	ih.requestHeader.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
 	ih.requestHeader.Set("Origin", "null")
 
@@ -216,7 +217,7 @@ func (ih *iptv345Handler) Name() string {
 func (ih *iptv345Handler) HelpDoc() string {
 	sb := strings.Builder{}
 	sb.WriteString("\n1. 该处理器仅限自用, 不适合分享")
-	sb.WriteString("\n2. 如果想通过直连播放（重定向）, 请使用可自定请求头的播放器（酷9、天光云影等）设置 Referer 头: [https://iptv345.com/] 后才可正常播放")
+	sb.WriteString("\n2. 如果想通过直连播放（重定向）, 请使用可自定请求头的播放器（酷9、天光云影等）设置 Referer 头: [" + ih.serverHost + "/] 后才可正常播放")
 	sb.WriteString("\n3. 如果是切片代理模式, 则无需指定请求头")
 	sb.WriteString("\n4. 连续播放一段时间可能会发生断流, 需要重新加载")
 
@@ -289,10 +290,11 @@ func (ih *iptv345Handler) initCacher() {
 			hken := secrets["hken"].(string)
 			hkens := secrets["hkens"].(string)
 			token := secrets["token"].(string)
+			hkenExtraKey := secrets["hkenExtraKey"].(string)
 
 			rawPlayUris := make([]string, len(playUris))
 			for i, playUri := range playUris {
-				res, err := ih.recoverPlayUri(hken, hkens, token, playUri)
+				res, err := ih.recoverPlayUri(hken, hkens, token, hkenExtraKey, playUri)
 				if err != nil {
 					log.Printf(colors.ToYellow("恢复频道播放地址失败: %v"), err)
 					continue
@@ -304,25 +306,49 @@ func (ih *iptv345Handler) initCacher() {
 	)
 }
 
-// fetchOriginData 获取网页中的 string 混淆代码变量值
-func (ih *iptv345Handler) fetchOriginData(tid, id string) (str2Decode string, playUris []string, fe error) {
-	pageUrl := fmt.Sprintf("https://iptv345.com/?act=play&tid=%s&id=%s", tid, id)
-	header := make(http.Header)
-	header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
-	_, res, err := https.Request(http.MethodGet, pageUrl, header, nil, false)
+// readPageContent 读取网页源代码
+func (ih *iptv345Handler) readPageContent(url string, header http.Header) (string, error) {
+	_, res, err := https.Request(http.MethodGet, url, header, nil, false)
 	if err != nil {
-		fe = fmt.Errorf("请求页面失败: %v", err)
-		return
+		return "", fmt.Errorf("请求页面失败: %v", err)
 	}
 	defer res.Body.Close()
 	pageBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		fe = fmt.Errorf("读取页面数据失败: %v", err)
+		return "", fmt.Errorf("读取页面数据失败: %v", err)
+	}
+	return string(pageBytes), nil
+}
+
+// fetchOriginData 获取网页中的 string 混淆代码变量值
+func (ih *iptv345Handler) fetchOriginData(tid, id string) (str2Decode string, playUris []string, fe error) {
+	header := make(http.Header)
+	header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+
+	// 1 解析出带有 token 的频道页面地址
+	listPageUrl := fmt.Sprintf("%s/?tid=%s", ih.serverHost, tid)
+	pageContent, err := ih.readPageContent(listPageUrl, header)
+	if err != nil {
+		fe = fmt.Errorf("读取频道列表页面失败: %v", err)
 		return
 	}
-	pageCode := string(pageBytes)
 
-	// 2 解析出 string 变量
+	linkGetter := regexp.MustCompile(fmt.Sprintf(`<a href="([^"]*&tid=%s&id=%s)"`, tid, id))
+	if !linkGetter.MatchString(pageContent) {
+		fe = fmt.Errorf("获取不到频道链接")
+		return
+	}
+	chLink := linkGetter.FindStringSubmatch(pageContent)[1]
+
+	// 2 读取频道页面原代码
+	pageUrl := ih.serverHost + "/" + chLink
+	pageCode, err := ih.readPageContent(pageUrl, header)
+	if err != nil {
+		fe = fmt.Errorf("读取频道页面失败: %v", err)
+		return
+	}
+
+	// 3 解析出 string 变量
 	varNameGetter := regexp.MustCompile(`var string=([^;]+);`)
 	if !varNameGetter.MatchString(pageCode) {
 		fe = fmt.Errorf("未找到 string 的混淆变量名称, 源代码: %s", pageCode)
@@ -342,7 +368,7 @@ func (ih *iptv345Handler) fetchOriginData(tid, id string) (str2Decode string, pl
 		stringValue = strs.ReverseString(stringValue)
 	}
 
-	// 3 解析原始的播放地址
+	// 4 解析原始的播放地址
 	var uris []string
 	uriGetter := regexp.MustCompile(`<option value="([^"]+)">[^<]*<\/option>`)
 	if !uriGetter.MatchString(pageCode) {
@@ -387,11 +413,12 @@ func (ih *iptv345Handler) decodeStringSecrets(encodeStr string) (map[string]inte
 }
 
 // recoverPlayUri 恢复播放地址明文
-func (ih *iptv345Handler) recoverPlayUri(hken, hkens, token, originPlayUri string) (string, error) {
+func (ih *iptv345Handler) recoverPlayUri(hken, hkens, token, hkenExtraKey, originPlayUri string) (string, error) {
 	resolvePlayUriCode := ih.decodePlayUriScript
 	resolvePlayUriCode = strings.Replace(resolvePlayUriCode, "${hken}", hken, 1)
 	resolvePlayUriCode = strings.Replace(resolvePlayUriCode, "${hkens}", hkens, 1)
 	resolvePlayUriCode = strings.Replace(resolvePlayUriCode, "${token}", token, 1)
+	resolvePlayUriCode = strings.Replace(resolvePlayUriCode, "${hkenExtraKey}", hkenExtraKey, 1)
 	resolvePlayUriCode = strings.Replace(resolvePlayUriCode, "${uri}", originPlayUri, 1)
 
 	vm := goja.New()
