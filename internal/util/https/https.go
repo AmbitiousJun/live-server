@@ -163,7 +163,7 @@ func Request(method, url string, header http.Header, body io.ReadCloser, autoRed
 			// 需要拼接上当前请求的前缀后再进行重定向
 			loc = fmt.Sprintf("%s://%s%s", req.URL.Scheme, req.URL.Host, loc)
 		}
-		return Request(method, loc, header, body, autoRedirect)
+		return Request(method, loc, header, io.NopCloser(bytes.NewBuffer(bodyBytes)), autoRedirect)
 	}
 	return url, resp, err
 }
