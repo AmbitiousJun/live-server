@@ -35,6 +35,11 @@ var (
 	cacheableTsProxyClient = https.NewCacheClient(50, time.Second*30)
 )
 
+// RemoveM3UProxyCache 移除 m3u 订阅缓存
+func RemoveM3UProxyCache(url string) {
+	cacheableProxyClient.RemoveUrlCache(url)
+}
+
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
