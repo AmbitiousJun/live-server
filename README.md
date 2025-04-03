@@ -1,3 +1,7 @@
+<div align="center">
+  <img height="150px" src="./assets/logo.png"></img>
+</div>
+
 <h1 align="center">live-server</h1>
 
 <div align="center">
