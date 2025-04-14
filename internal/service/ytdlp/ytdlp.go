@@ -2,6 +2,7 @@ package ytdlp
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -24,22 +25,25 @@ func Extract(url, formatCode string) (string, error) {
 		url,
 		"--get-url",
 	)
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
 
 	// 执行获取输出
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("执行命令失败: %v", err)
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("执行命令失败: %v, err: %s", err, errBuf.String())
 	}
 
 	// 校验结果
-	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	output := outBuf.String()
+	scanner := bufio.NewScanner(strings.NewReader(output))
 	if !scanner.Scan() {
-		return "", fmt.Errorf("解析出非预期结果, 原始输出: %s", string(output))
+		return "", fmt.Errorf("解析出非预期结果, 原始输出: %s", output)
 	}
 
 	line := scanner.Text()
 	if !strings.HasPrefix(line, "http") {
-		return "", fmt.Errorf("解析出非预期结果, 原始输出: %s", string(output))
+		return "", fmt.Errorf("解析出非预期结果, 原始输出: %s", output)
 	}
 
 	return line, nil
