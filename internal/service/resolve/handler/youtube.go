@@ -71,6 +71,7 @@ func (y *youtubeHandler) HelpDoc() string {
 	sb.WriteString("\n4. 默认只支持 HD(720p) 直播格式解析")
 	sb.WriteString("\n5. 设置环境变量 【youtube_custom_format_enable=1】 可开启自定义直播格式解析, 目前只支持 FHD")
 	sb.WriteString("\n6. 使用自定义的直播格式需要在调用处理器时传入 query 参数，如：?format=FHD")
+	sb.WriteString("\n7. 解析失败时，请自行在浏览器登录 youtube 账号，并使用 <a href=\"https://chromewebstore.google.com/detail/editthiscookie/cmbkolgnkghmgajbbapoicfhjlabmpef?utm_source=ext_app_menu\" target=\"__blank\">EditThisCookie</a> 插件导出 Netscape 格式的 cookie 文件放到程序读取目录下解决")
 	return sb.String()
 }
 
