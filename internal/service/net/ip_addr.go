@@ -137,7 +137,7 @@ func readIpAddrFromDisk() {
 	}
 
 	// 读取文件内容
-	fp := filepath.Join(constant.Dir_DataRoot, IpAddrDiskFileName)
+	fp, _ := filepath.Abs(filepath.Join(constant.Dir_DataRoot, IpAddrDiskFileName))
 	fileBytes, err := os.ReadFile(fp)
 	if err != nil {
 		if !strings.Contains(err.Error(), "no such file or directory") {

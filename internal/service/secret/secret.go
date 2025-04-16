@@ -27,7 +27,7 @@ func Init() error {
 		return nil
 	}
 
-	fp := filepath.Join(constant.Dir_DataRoot, DiskFileName)
+	fp, _ := filepath.Abs(filepath.Join(constant.Dir_DataRoot, DiskFileName))
 	defer func() {
 		if localSecret != "" {
 			log.Printf(colors.ToGreen("secret: %s, 可在路径 [%s] 下进行查看和自定义"), localSecret, fp)

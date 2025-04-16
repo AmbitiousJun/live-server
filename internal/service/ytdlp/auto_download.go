@@ -6,10 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 
-	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
 	"github.com/AmbitiousJun/live-server/internal/util/https"
@@ -39,9 +37,8 @@ var arch2ExecNameMap = map[string]string{
 }
 
 var (
-	parentPath = filepath.Join(constant.Dir_DataRoot, "yt-dlp") // 二进制文件存放根路径
-	execOk     = false                                          // 标记二进制文件是否处于就绪状态
-	execPath   string                                           // 根据当前系统架构自动生成一个二进制文件地址
+	execOk   = false // 标记二进制文件是否处于就绪状态
+	execPath string  // 根据当前系统架构自动生成一个二进制文件地址
 )
 
 func init() {

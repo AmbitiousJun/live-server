@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -19,12 +20,12 @@ func Extract(url, formatCode string) (string, error) {
 	}
 
 	// 构造命令
-	cmd := exec.Command(
-		execPath,
-		"-f", formatCode,
-		url,
-		"--get-url",
-	)
+	args := []string{"-f", formatCode, url, "--get-url"}
+	if ckExist {
+		args = slices.Concat([]string{"--cookies", CookieFilePath}, args)
+	}
+
+	cmd := exec.Command(execPath, args...)
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &errBuf
