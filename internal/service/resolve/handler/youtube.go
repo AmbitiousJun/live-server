@@ -121,9 +121,9 @@ func (y *youtubeHandler) initCacher() {
 			log.Printf(colors.ToGreen("youtube 缓存刷新完成, 成功: %d, 失败: %d, 移除: %d"), success, fail, remove)
 		}),
 
-		resolve.WithCacheTimeout[youtubeParams](time.Hour),
+		resolve.WithCacheTimeout[youtubeParams](time.Hour*3),
 		resolve.WithRemoveInterval[youtubeParams](time.Minute*10),
-		resolve.WithUpdateInterval[youtubeParams](time.Hour*2),
+		resolve.WithUpdateInterval[youtubeParams](time.Hour*4),
 	)
 }
 
