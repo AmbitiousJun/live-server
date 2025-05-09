@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -157,15 +158,24 @@ func Request(method, url string, header http.Header, body io.ReadCloser, autoRed
 	}
 
 	// 3 对重定向响应的处理
-	if autoRedirect && IsRedirectCode(resp.StatusCode) {
-		loc := resp.Header.Get("Location")
-		if strings.HasPrefix(loc, "/") {
-			// 需要拼接上当前请求的前缀后再进行重定向
-			loc = fmt.Sprintf("%s://%s%s", req.URL.Scheme, req.URL.Host, loc)
-		}
-		return Request(method, loc, header, io.NopCloser(bytes.NewBuffer(bodyBytes)), autoRedirect)
+	if !autoRedirect || !IsRedirectCode(resp.StatusCode) {
+		return url, resp, err
 	}
-	return url, resp, err
+	loc := resp.Header.Get("Location")
+	newBody := io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	if strings.HasPrefix(loc, "http") {
+		return Request(method, loc, header, newBody, autoRedirect)
+	}
+
+	if strings.HasPrefix(loc, "/") {
+		loc = fmt.Sprintf("%s://%s%s", req.URL.Scheme, req.URL.Host, loc)
+		return Request(method, loc, header, newBody, autoRedirect)
+	}
+
+	dirPath := path.Dir(req.URL.Path)
+	loc = fmt.Sprintf("%s://%s%s/%s", req.URL.Scheme, req.URL.Host, dirPath, loc)
+	return Request(method, loc, header, newBody, autoRedirect)
 }
 
 // ProxyRequest 代理请求
