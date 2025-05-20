@@ -26,3 +26,7 @@ const (
 const (
 	Gin_IpAddrInfoKey = "ip_addr_info" // 在 gin 上下文中存放 IP 地址信息的键
 )
+
+const (
+	Warp_ExecPathEnvKey = "warp_exec_path" // 环境变量中存放 warp 执行路径的键
+)

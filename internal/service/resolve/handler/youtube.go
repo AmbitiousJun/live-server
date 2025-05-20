@@ -9,6 +9,7 @@ import (
 
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
+	"github.com/AmbitiousJun/live-server/internal/service/warp"
 	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
 	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
@@ -31,14 +32,30 @@ type youtubeHandler struct {
 
 	// cacher 解析并缓存频道地址的处理器
 	cacher *resolve.Cacher[youtubeParams]
+
+	// warpListenerId warp 监听器 id, 用于动态检测修复被封禁 ip
+	warpListenerId string
 }
 
 func init() {
+
 	y := &youtubeHandler{
 		customFormatEnableEnv: "youtube_custom_format_enable",
 		chPrefix:              base64s.MustDecodeString("aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj0="),
 	}
 	y.initCacher()
+
+	l := warp.Listener{
+		CheckIP: func() error {
+			_, err := ytdlp.Extract(y.chPrefix+"6IquAgfvYmc", y.chooseFormat(""))
+			if err != nil && strings.Contains(err.Error(), "Sign in to confirm you’re not a bot") {
+				return fmt.Errorf("youtube 不可用: %v", err)
+			}
+			return nil
+		},
+	}
+	y.warpListenerId = warp.RegisterListener(l)
+
 	resolve.RegisterHandler(y)
 }
 
@@ -47,6 +64,7 @@ func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 	formatCode := y.chooseFormat(params.Format)
 	playlist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: formatCode})
 	if err != nil {
+		warp.ReportError(y.warpListenerId)
 		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
 	}
 
