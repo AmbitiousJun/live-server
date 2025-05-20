@@ -172,6 +172,13 @@ func HelpDoc() string {
 	sb.WriteString("\n3. 将视频地址设置到 live-server 的环境变量 [fallback_mp4] 上即可自动生效")
 	sb.WriteString("\n")
 
+	// warp 说明
+	sb.WriteString("\n<strong>warp 自动修复被封禁 ip 说明：</strong>")
+	sb.WriteString("\n1. 此功能适用场景: 1) 通过二进制运行 live-server 2) vps 使用 <a href=\"https://github.com/yonggekkk/warp-yg\" target=\"_blank\">ygkkk</a> 的 warp 脚本, 且是已开启状态")
+	sb.WriteString("\n2. 描述：当处理器检测到 ip 被封禁时, 自动运行脚本刷新可用 ip 进行解锁")
+	sb.WriteString("\n3. 使用方式: 设置 live-server 的环境变量 [" + constant.Warp_ExecPathEnvKey + "] 值为 warp 脚本的绝对路径, 如：[/root/CFwarp.sh], 程序会自动调用")
+	sb.WriteString("\n")
+
 	// 处理器文档
 	sb.WriteString("\n<strong>处理器说明：</strong>")
 	handlerMapOpMutex.RLock()
