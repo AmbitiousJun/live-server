@@ -144,12 +144,12 @@ func (m *manager) doFix(execPath string) {
 			log.Println(colors.ToGreen("warp ip 修复完成, 当前可用"))
 			return
 		}
-		log.Printf(colors.ToYellow("warp ip 不可用, err: %v"), err)
+		log.Printf(colors.ToYellow("warp ip 不可用, 开始进行自动修复, err: %v"), err)
 
 		// 2 执行脚本, 刷新 ip
 		if err := m.refreshIP(execPath); err != nil {
 			log.Printf(colors.ToRed("warp ip 刷新失败: %v"), err)
-			return
+			continue
 		}
 
 		// 3 输出 v4 v6 信息
