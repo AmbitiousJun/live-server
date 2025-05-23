@@ -70,6 +70,7 @@ func (m *manager) checkIP() error {
 // refreshIP 调用脚本 刷新 ip
 func (m *manager) refreshIP(execPath string) error {
 	cmd := exec.Command("bash", execPath)
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 	stdin, _ := cmd.StdinPipe()
 	stderr, _ := cmd.StderrPipe()
 
