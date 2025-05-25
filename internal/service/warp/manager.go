@@ -68,7 +68,7 @@ func (m *manager) checkIP() error {
 }
 
 // refreshIP 调用脚本 刷新 ip
-func (m *manager) refreshIP(execPath string) error {
+func (m *manager) refreshIP(execPath string, needV6 bool) error {
 	cmd := exec.Command("bash", execPath)
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 	stdin, _ := cmd.StdinPipe()
@@ -83,7 +83,7 @@ func (m *manager) refreshIP(execPath string) error {
 		io.WriteString(stdin, "1\n")
 		// v4 单栈 / v4.v6 双栈
 		ipOption := "1\n"
-		if rand.Float64() >= 0.5 {
+		if needV6 {
 			ipOption = "3\n"
 		}
 		io.WriteString(stdin, ipOption)
@@ -101,7 +101,7 @@ func (m *manager) refreshIP(execPath string) error {
 }
 
 // printCurIP 输出当前的 ip 信息
-func (m *manager) printCurIP() {
+func (m *manager) printCurIP(needV6 bool) {
 	var v4, v6 string
 	g := errgroup.Group{}
 
@@ -126,7 +126,9 @@ func (m *manager) printCurIP() {
 	}
 
 	g.Go(inner("https://ipinfo.io/ip", "v4", &v4))
-	g.Go(inner("https://v6.ipinfo.io/ip", "v6", &v6))
+	if needV6 {
+		g.Go(inner("https://v6.ipinfo.io/ip", "v6", &v6))
+	}
 	if err := g.Wait(); err != nil {
 		log.Printf(colors.ToYellow("获取最新 ip 失败: %v"), err)
 		return
@@ -146,14 +148,17 @@ func (m *manager) doFix(execPath string) {
 		}
 		log.Printf(colors.ToYellow("warp ip 不可用, 开始进行自动修复, err: %v"), err)
 
-		// 2 执行脚本, 刷新 ip
-		if err := m.refreshIP(execPath); err != nil {
+		// 2 随机判断是否获取 needV6 地址
+		needV6 := rand.Float64() >= 0.5
+
+		// 3 执行脚本, 刷新 ip
+		if err := m.refreshIP(execPath, needV6); err != nil {
 			log.Printf(colors.ToRed("warp ip 刷新失败: %v"), err)
 			continue
 		}
 
-		// 3 输出 v4 v6 信息
-		m.printCurIP()
+		// 4 输出 v4 v6 信息
+		m.printCurIP(needV6)
 	}
 }
 
