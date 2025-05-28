@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
@@ -130,8 +131,7 @@ func (m *manager) printCurIP(needV6 bool) {
 		g.Go(inner("https://v6.ipinfo.io/ip", "v6", &v6))
 	}
 	if err := g.Wait(); err != nil {
-		log.Printf(colors.ToYellow("获取最新 ip 失败: %v"), err)
-		return
+		log.Printf(colors.ToYellow("获取最新 ip 异常: %v"), err)
 	}
 	log.Printf(colors.ToGreen("最新 ip 信息 => v4: [%s], v6: [%s]"), v4, v6)
 }
@@ -158,6 +158,7 @@ func (m *manager) doFix(execPath string) {
 		}
 
 		// 4 输出 v4 v6 信息
+		time.Sleep(time.Second)
 		m.printCurIP(needV6)
 	}
 }
