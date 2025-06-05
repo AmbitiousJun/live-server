@@ -1,10 +1,12 @@
 package warp
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -46,6 +48,9 @@ type manager struct {
 
 	// maxTryPerTime 每次修复最大尝试次数
 	maxTryPerTime int
+
+	// httpCli http 客户端
+	httpCli *http.Client
 }
 
 // newManager 初始化管理器对象
@@ -53,6 +58,13 @@ func newManager(resultChanSize, maxTryPerTime int) *manager {
 	return &manager{
 		resultC:       make(chan fixResult, resultChanSize),
 		maxTryPerTime: maxTryPerTime,
+		httpCli: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+				Dial:                  (&net.Dialer{Timeout: time.Second * 20}).Dial,
+				ResponseHeaderTimeout: time.Second * 20,
+			},
+		},
 	}
 }
 
@@ -109,7 +121,9 @@ func (m *manager) printCurIP(needV6 bool) {
 	inner := func(url, tag string, destPtr *string) func() error {
 		return func() error {
 			header := http.Header{"User-Agent": []string{"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}}
-			_, resp, err := https.Request(http.MethodGet, url, header, nil, true)
+			req, _ := http.NewRequest(http.MethodGet, url, nil)
+			req.Header = header
+			resp, err := m.httpCli.Do(req)
 			if err != nil {
 				return fmt.Errorf("请求 %s 地址失败: %v", tag, err)
 			}
@@ -158,7 +172,7 @@ func (m *manager) doFix(execPath string) {
 		}
 
 		// 4 输出 v4 v6 信息
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 20)
 		m.printCurIP(needV6)
 	}
 }
