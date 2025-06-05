@@ -60,9 +60,10 @@ func newManager(resultChanSize, maxTryPerTime int) *manager {
 		maxTryPerTime: maxTryPerTime,
 		httpCli: &http.Client{
 			Transport: &http.Transport{
+				DisableKeepAlives:     true,
 				TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-				Dial:                  (&net.Dialer{Timeout: time.Second * 20}).Dial,
-				ResponseHeaderTimeout: time.Second * 20,
+				Dial:                  (&net.Dialer{Timeout: time.Second * 10}).Dial,
+				ResponseHeaderTimeout: time.Second * 10,
 			},
 		},
 	}
