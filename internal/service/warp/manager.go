@@ -173,9 +173,10 @@ func (m *manager) doFix(execPath string) {
 		}
 
 		// 4 输出 v4 v6 信息
-		time.Sleep(time.Second * 20)
+		time.Sleep(time.Second * 10)
 		m.printCurIP(needV6)
 	}
+	log.Println(colors.ToPurple("warp ip 刷新重试次数已达上限"))
 }
 
 // fix 验证脚本路径后开始异步刷新 ip
