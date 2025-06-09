@@ -2,6 +2,8 @@ package net
 
 import "net"
 
+const PrivateIpInfoName = "局域网"
+
 // privateBlocks 局域网网段
 var privateBlocks = []string{
 	"10.0.0.0/8",     // 私有 IPv4
