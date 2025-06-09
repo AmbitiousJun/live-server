@@ -58,7 +58,7 @@ func HandleLive(c *gin.Context) {
 
 	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
 		c.Set(constant.Gin_IpAddrInfoKey, ipInfo)
-		if !whitearea.Passable(ipInfo) {
+		if ipInfo != net.PrivateIpInfoName && !whitearea.Passable(ipInfo) {
 			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
 			return
 		}

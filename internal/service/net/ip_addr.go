@@ -175,7 +175,7 @@ func resolveIpAddr(ip string) (string, error) {
 
 	// 优先判断局域网 ip
 	if IsPrivateIp(ip) {
-		return "局域网", nil
+		return PrivateIpInfoName, nil
 	}
 
 	// v4
