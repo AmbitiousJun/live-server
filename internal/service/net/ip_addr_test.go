@@ -17,7 +17,7 @@ func TestReg(t *testing.T) {
 	providerReg := regexp.MustCompile(`<label><span class="name">运营商：</span><span class="value">(.*)</span></label>`)
 	header := make(http.Header)
 	header.Set("User-Agent", "libmpv")
-	_, resp, err := https.Request(http.MethodGet, url, header, nil, true)
+	resp, err := https.Get(url).Header(header).Do()
 	if err != nil {
 		log.Panic(err)
 	}

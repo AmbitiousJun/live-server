@@ -308,7 +308,7 @@ func (ih *iptv345Handler) initCacher() {
 
 // readPageContent 读取网页源代码
 func (ih *iptv345Handler) readPageContent(url string, header http.Header) (string, error) {
-	_, res, err := https.Request(http.MethodGet, url, header, nil, false)
+	res, err := https.Get(url).Header(header).Do()
 	if err != nil {
 		return "", fmt.Errorf("请求页面失败: %v", err)
 	}
@@ -433,7 +433,7 @@ func (ih *iptv345Handler) recoverPlayUri(hken, hkens, token, hkenExtraKey, origi
 func (ih *iptv345Handler) sendSessionHeartBeatPkg() {
 	urls := ih.sessionCli.GetAllCacheUrls()
 	for _, url := range urls {
-		_, resp, err := https.Request(http.MethodGet, url, ih.requestHeader.Clone(), nil, true)
+		resp, err := https.Get(url).Header(ih.requestHeader.Clone()).Do()
 		if err != nil {
 			log.Printf(colors.ToYellow("发送 345 心跳包异常: %v"), err)
 			continue
