@@ -46,7 +46,7 @@ func loopWritingDisk(envJson *jsons.Item) {
 	for {
 		select {
 		case pair := <-diskPreStoreChan:
-			envJson.Put(pair.key, jsons.NewByVal(pair.value))
+			envJson.Put(pair.key, jsons.FromValue(pair.value))
 		case key := <-diskPreRemoveChan:
 			envJson.DelKey(key)
 		}

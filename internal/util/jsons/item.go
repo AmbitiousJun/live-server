@@ -3,7 +3,6 @@ package jsons
 import (
 	"errors"
 	"math/rand"
-	"sync"
 )
 
 // JsonType json 属性值类型
@@ -22,7 +21,7 @@ var ErrBreakRange = errors.New("break arr or obj range")
 type Item struct {
 
 	// val 普通值: string, bool, int, float64, <null>
-	val interface{}
+	val any
 
 	// obj 对象值
 	obj map[string]*Item
@@ -32,9 +31,6 @@ type Item struct {
 
 	// jType 当前数据项类型
 	jType JsonType
-
-	// mu 并发控制
-	mu sync.Mutex
 }
 
 // Type 获取 json 项类型
@@ -47,8 +43,6 @@ func (i *Item) Put(key string, value *Item) {
 	if i.jType != JsonTypeObj || value == nil {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.obj[key] = value
 }
 
@@ -79,8 +73,6 @@ func (i *Item) DelKey(key string) {
 	if i.jType != JsonTypeObj {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	delete(i.obj, key)
 }
 
@@ -89,8 +81,6 @@ func (i *Item) Append(values ...*Item) {
 	if i.jType != JsonTypeArr || len(values) == 0 {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	for _, value := range values {
 		if value == nil {
 			continue
@@ -118,8 +108,6 @@ func (i *Item) PutIdx(index int, newItem *Item) {
 	if index < 0 || index >= len(i.arr) {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.arr[index] = newItem
 }
 
@@ -157,12 +145,29 @@ func (i *Item) FindIdx(filterFunc func(val *Item) bool) int {
 	return idx
 }
 
+// Filter 过滤数组元素, 返回一个新的 item 对象
+//
+// 如果 i 不为数组, 返回空数组 item 对象
+func (i *Item) Filter(filterFunc func(val *Item) bool) *Item {
+	res := NewEmptyArr()
+	if i.jType != JsonTypeArr {
+		return res
+	}
+	i.RangeArr(func(_ int, value *Item) error {
+		if filterFunc(value) {
+			res.Append(value)
+		}
+		return nil
+	})
+	return res
+}
+
 // Map 将数组中的元素按照指定规则映射之后返回一个新数组
-func (i *Item) Map(mapFunc func(val *Item) interface{}) []interface{} {
+func (i *Item) Map(mapFunc func(val *Item) any) []any {
 	if i.jType != JsonTypeArr {
 		return nil
 	}
-	res := make([]interface{}, 0)
+	res := make([]any, 0)
 	i.RangeArr(func(_ int, value *Item) error {
 		res = append(res, mapFunc(value))
 		return nil
@@ -175,8 +180,6 @@ func (i *Item) Shuffle() {
 	if i.jType != JsonTypeArr {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	rand.Shuffle(i.Len(), func(j, k int) {
 		i.arr[j], i.arr[k] = i.arr[k], i.arr[j]
 	})
@@ -190,8 +193,6 @@ func (i *Item) DelIdx(index int) {
 	if index < 0 || index >= len(i.arr) {
 		return
 	}
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.arr = append(i.arr[:index], i.arr[index+1:]...)
 }
 
