@@ -129,7 +129,10 @@ func (cc *CacheClient) Request(method, url string, header http.Header, body io.R
 	}()
 
 	// 发起请求
-	finalUrl, resp, err := Request(method, url, header, io.NopCloser(bytes.NewBufferString(strBody)), autoRedirect)
+	finalUrl, resp, err := Request(method, url).
+		Header(header).
+		Body(io.NopCloser(bytes.NewBufferString(strBody))).
+		DoRedirect()
 	var bodyBytes []byte
 
 	// 错误响应

@@ -191,7 +191,7 @@ func resolveIpv4Addr(ip string) (string, error) {
 	headerWithUA := make(http.Header)
 	headerWithUA.Set("User-Agent", "libmpv")
 	url := strings.ReplaceAll(ipLookupUrlV4, "${ip}", ip)
-	_, resp, err := https.Request(http.MethodGet, url, headerWithUA, nil, true)
+	resp, err := https.Get(url).Header(headerWithUA).Do()
 	if err != nil {
 		return "", err
 	}
@@ -227,7 +227,7 @@ func resolveIpv4Addr(ip string) (string, error) {
 // resolveIpv6Addr 解析 ipv6 的属地信息
 func resolveIpv6Addr(ip string) (string, error) {
 	u := strings.ReplaceAll(ipLookupUrlV6, "${ip}", ip)
-	_, resp, err := https.Request(http.MethodGet, u, nil, nil, true)
+	resp, err := https.Get(u).Do()
 	if err != nil {
 		return "", fmt.Errorf("请求远程失败: %v", err)
 	}

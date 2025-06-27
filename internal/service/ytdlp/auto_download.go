@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"runtime"
 
@@ -85,7 +84,7 @@ func autoDownloadExec() {
 	}
 	log.Printf(colors.ToBlue("yt-dlp 下载发布页: %s (可通过环境变量 %s 自定义)"), releasePage, Env_ReleasePage)
 
-	_, resp, err := https.Request(http.MethodGet, releasePage+"/"+execName, nil, nil, true)
+	resp, err := https.Get(releasePage + "/" + execName).Do()
 	if err != nil {
 		log.Printf(colors.ToRed("下载失败: %v"), err)
 		return

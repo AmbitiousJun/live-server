@@ -88,7 +88,7 @@ func (f *fengHandler) Handle(params resolve.HandleParams) (resolve.HandleResult,
 	header.Set("fengshows-client", "app(ios,5041701);iPhone11,8;16.1.2")
 	header.Set("client-lang", "zh-CN")
 	header.Set("User-Agent", "FengWatch/5.4.17 (iPhone; iOS 16.1.2; Scale/2.00)")
-	_, resp, err := https.Request(http.MethodGet, u.String(), header, nil, true)
+	resp, err := https.Get(u.String()).Header(header).Do()
 	if err != nil {
 		return resolve.HandleResult{}, fmt.Errorf("请求失败: %s", err)
 	}
@@ -165,7 +165,7 @@ func (f *fengHandler) autoRefreshFengToken() {
 	env.SetAutoRefresh(f.tokenEnv, func(curVal string) (string, error) {
 		header := make(http.Header)
 		header.Set("Token", curVal)
-		_, resp, err := https.Request(http.MethodPost, f.authUpdateUrl, header, nil, true)
+		resp, err := https.Post(f.authUpdateUrl).Header(header).Do()
 		if err != nil {
 			return "", fmt.Errorf("请求失败: %v", err)
 		}
