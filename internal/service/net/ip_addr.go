@@ -114,7 +114,7 @@ func setIpAddrCache(ip, ipInfo string) {
 		return
 	}
 
-	ipAddrCache.Put(ip, jsons.NewByVal(ipInfo))
+	ipAddrCache.Put(ip, jsons.FromValue(ipInfo))
 
 	fp := filepath.Join(constant.Dir_DataRoot, IpAddrDiskFileName)
 	if err := os.WriteFile(fp, []byte(ipAddrCache.String()), os.ModePerm); err != nil {
