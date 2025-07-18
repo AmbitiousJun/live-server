@@ -13,5 +13,5 @@ func V4() R {
 
 // V6 获取 v6 解析器
 func V6() R {
-	return &v6Ipwcn{}
+	return &v6Ip77{}
 }
