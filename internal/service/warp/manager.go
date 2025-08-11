@@ -81,8 +81,23 @@ func (m *manager) checkIP() error {
 	return g.Wait()
 }
 
-// refreshIP 调用脚本 刷新 ip
-func (m *manager) refreshIP(execPath string, needV6 bool) error {
+// wgcfRefreshIP 调用 wgcf 脚本 刷新 ip
+func (m *manager) wgcfRefreshIP(execPath string, needV6 bool) error {
+	option := "4"
+	if needV6 {
+		option = "d"
+	}
+	cmd := exec.Command("bash", execPath, option)
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("调用脚本失败: %v", err)
+	}
+	return nil
+}
+
+// ygkkkRefreshIP 调用勇哥脚本 刷新 ip
+func (m *manager) ygkkkRefreshIP(execPath string, needV6 bool) error {
 	cmd := exec.Command("bash", execPath)
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 	stdin, _ := cmd.StdinPipe()
@@ -167,7 +182,7 @@ func (m *manager) doFix(execPath string) {
 		needV6 := rand.Float64() >= 0.5
 
 		// 3 执行脚本, 刷新 ip
-		if err := m.refreshIP(execPath, needV6); err != nil {
+		if err := m.wgcfRefreshIP(execPath, needV6); err != nil {
 			log.Printf(colors.ToRed("warp ip 刷新失败: %v"), err)
 			continue
 		}
