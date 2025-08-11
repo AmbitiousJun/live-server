@@ -5,8 +5,8 @@
 <h1 align="center">live-server</h1>
 
 <div align="center">
-  <a href="https://github.com/AmbitiousJun/live-server/tree/v1.22.9"><img src="https://img.shields.io/github/v/tag/AmbitiousJun/live-server"></img></a>
-  <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/image-size/ambitiousjun/live-server/v1.22.9"></img></a>
+  <a href="https://github.com/AmbitiousJun/live-server/tree/v1.22.10"><img src="https://img.shields.io/github/v/tag/AmbitiousJun/live-server"></img></a>
+  <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/image-size/ambitiousjun/live-server/v1.22.10"></img></a>
   <a href="https://hub.docker.com/r/ambitiousjun/live-server/tags"><img src="https://img.shields.io/docker/pulls/ambitiousjun/live-server"></img></a>
   <a href="https://goreportcard.com/report/github.com/AmbitiousJun/live-server"><img src="https://goreportcard.com/badge/github.com/AmbitiousJun/live-server"></img></a>
   <a href="https://github.com/AmbitiousJun/live-server/releases/latest"><img src="https://img.shields.io/github/downloads/AmbitiousJun/live-server/total"></img></a>
