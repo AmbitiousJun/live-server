@@ -148,7 +148,7 @@ func (y *youtubeHandler) initCacher() {
 // chooseFormat 选择一个合适的 yt-dlp formatCode
 func (y *youtubeHandler) chooseFormat(wantFmt string) string {
 	// 默认使用 720 p
-	res := "95"
+	res := "232"
 
 	// 判断是否允许自定义
 	enable, ok := env.Get(y.customFormatEnableEnv)
@@ -158,7 +158,7 @@ func (y *youtubeHandler) chooseFormat(wantFmt string) string {
 
 	switch wantFmt {
 	case "FHD":
-		res = "96"
+		res = "270"
 	}
 
 	return res
