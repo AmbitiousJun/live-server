@@ -1,12 +1,16 @@
 package handler
 
 import (
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
+	"github.com/AmbitiousJun/live-server/internal/constant"
 	"github.com/AmbitiousJun/live-server/internal/service/env"
 	"github.com/AmbitiousJun/live-server/internal/service/resolve"
 	"github.com/AmbitiousJun/live-server/internal/service/warp"
@@ -47,7 +51,8 @@ func init() {
 
 	l := warp.Listener{
 		CheckIP: func() error {
-			_, err := ytdlp.Extract(y.chPrefix+"6IquAgfvYmc", y.chooseFormat(""))
+			_, audio := y.chooseFormat("")
+			_, err := ytdlp.Extract(y.chPrefix+"6IquAgfvYmc", audio)
 			if err != nil && strings.Contains(err.Error(), "Sign in to confirm you’re not a bot") {
 				return fmt.Errorf("youtube 不可用: %v", err)
 			}
@@ -61,18 +66,74 @@ func init() {
 
 // Handle 处理直播, 返回一个用于重定向的远程地址
 func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
-	formatCode := y.chooseFormat(params.Format)
-	playlist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: formatCode})
+	videoCode, audioCode := y.chooseFormat(params.Format)
+
+	videoPlaylist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: videoCode})
 	if err != nil {
-		warp.ReportError(y.warpListenerId)
-		return resolve.HandleResult{}, fmt.Errorf("获取 playlist 失败: %v", err)
+		go warp.ReportError(y.warpListenerId)
+		return resolve.HandleResult{}, fmt.Errorf("获取 video playlist 失败: %w", err)
 	}
 
-	params.Headers = make(http.Header)
-	params.Headers.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
-	params.Headers.Set("Referer", "https://www.youtube.com/")
-	params.Headers.Set("Origin", "https://www.youtube.com")
-	return resolve.M3U8Result(playlist, params)
+	audioPlaylist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: audioCode})
+	if err != nil {
+		go warp.ReportError(y.warpListenerId)
+		return resolve.HandleResult{}, fmt.Errorf("获取 audio playlist 失败: %w", err)
+	}
+
+	// 不支持重定向, 必须启用 proxy_m3u 参数
+	if !params.ProxyM3U {
+		return resolve.HandleResult{}, errors.New("该解析器暂时不支持直接重定向, 请启用 proxy_m3u 参数")
+	}
+
+	// 拼接请求头
+	headers := []string{
+		"User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+		"Referer", "https://www.youtube.com/",
+		"Origin", "https://www.youtube.com",
+	}
+
+	// 构造 query 参数
+	urlQueries := url.Values{}
+	urlQueries.Set("headers", base64.StdEncoding.EncodeToString([]byte(strings.Join(headers, constant.HeadersSeg))))
+	urlQueries.Set("client_host", base64.StdEncoding.EncodeToString([]byte(params.ClientHost)))
+	if params.ProxyTs {
+		urlQueries.Set("proxy_ts", "1")
+	}
+	switch params.TsProxyMode {
+	case resolve.ModeCustom:
+		urlQueries.Set("ts_proxy_mode", string(params.TsProxyMode))
+	default:
+		urlQueries.Set("ts_proxy_mode", string(resolve.ModeLocal))
+	}
+
+	// 构造视频 m3u 代理地址
+	urlQueries.Set("remote", base64.StdEncoding.EncodeToString([]byte(videoPlaylist)))
+	videoUrl, _ := url.Parse("/proxy.m3u8")
+	videoUrl.RawQuery = urlQueries.Encode()
+
+	// 构造音频 m3u 代理地址
+	urlQueries.Set("remote", base64.StdEncoding.EncodeToString([]byte(audioPlaylist)))
+	audioUrl, _ := url.Parse("/proxy.m3u8")
+	audioUrl.RawQuery = urlQueries.Encode()
+
+	// 构造响应
+	responseHeader := make(http.Header)
+	responseHeader.Set("Content-Type", "application/vnd.apple.mpegurl")
+
+	responseBody := fmt.Sprintf(`#EXTM3U
+
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="Audio",DEFAULT=YES,AUTOSELECT=YES,URI="%s"
+
+#EXT-X-STREAM-INF:BANDWIDTH=3000000,AUDIO="audio"
+%s
+`, audioUrl.String(), videoUrl.String())
+
+	return resolve.HandleResult{
+		Type:   resolve.ResultProxy,
+		Code:   http.StatusOK,
+		Header: responseHeader,
+		Body:   []byte(responseBody),
+	}, nil
 }
 
 // Name 处理器名称
@@ -146,20 +207,20 @@ func (y *youtubeHandler) initCacher() {
 }
 
 // chooseFormat 选择一个合适的 yt-dlp formatCode
-func (y *youtubeHandler) chooseFormat(wantFmt string) string {
+func (y *youtubeHandler) chooseFormat(wantFmt string) (video, audio string) {
 	// 默认使用 720 p
-	res := "232"
+	video, audio = "232", "234"
 
 	// 判断是否允许自定义
 	enable, ok := env.Get(y.customFormatEnableEnv)
 	if !ok || enable != "1" {
-		return res
+		return
 	}
 
 	switch wantFmt {
 	case "FHD":
-		res = "270"
+		return "270", audio
 	}
 
-	return res
+	return
 }

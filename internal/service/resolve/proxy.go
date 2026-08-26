@@ -29,7 +29,7 @@ const (
 var (
 
 	// cacheableProxyClient 使用带缓存特性的 http 客户端代理 m3u
-	cacheableProxyClient = https.NewCacheClient(1000, time.Second*5)
+	cacheableProxyClient = https.NewCacheClient(1000, time.Second*4)
 
 	// cacheableTsProxyClient 使用带缓存特性的 http 客户端代理 ts
 	cacheableTsProxyClient = https.NewCacheClient(50, time.Second*30)
@@ -110,8 +110,79 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 	}), nil
 }
 
-// ProxyTs 代理 ts 切片
-func ProxyTs(c *gin.Context) {
+// HandleProxyM3U8 代理 m3u8 文本
+func HandleProxyM3U8(c *gin.Context) {
+	// 校验客户端 ip 是否可受信任
+	clientIp := c.ClientIP()
+	if net.IsBlackIp(clientIp) {
+		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
+		return
+	}
+	ipInfo, ok := net.GetIpAddrInfo(clientIp)
+	if !ok || !whitearea.Passable(ipInfo) {
+		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
+		return
+	}
+
+	// 解码远程 url 地址
+	remoteBytes, err := base64.StdEncoding.DecodeString(c.Query("remote"))
+	if err != nil {
+		log.Println(colors.ToRed("代理失败, 参数 [remote] 必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+	remote := string(remoteBytes)
+
+	// 解码自定义代理请求头
+	header := make(http.Header)
+	header.Set("User-Agent", DefaultProxyUA)
+	headerBytes, err := base64.StdEncoding.DecodeString(c.Query("headers"))
+	if err != nil {
+		log.Println(colors.ToRed("代理失败, 参数 [headers] 必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+
+	headerStr := string(headerBytes)
+	if headerStr != "" {
+		kvs := strings.Split(headerStr, constant.HeadersSeg)
+		for i := 0; i+1 < len(kvs); i += 2 {
+			header.Set(kvs[i], kvs[i+1])
+		}
+	}
+
+	// 解码客户端 host
+	clientHostBytes, err := base64.StdEncoding.DecodeString(c.Query("client_host"))
+	if err != nil {
+		log.Println(colors.ToRed("代理失败, 参数 [client_host] 必须是 base64 编码"))
+		c.String(http.StatusBadRequest, "参数错误")
+		return
+	}
+	clientHost := string(clientHostBytes)
+
+	// 解析切片代理参数
+	proxyTs := c.Query("proxy_ts") == "1"
+	tsProxyMode := ModeLocal
+	if c.Query("ts_proxy_mode") == string(ModeCustom) {
+		tsProxyMode = ModeCustom
+	}
+
+	// 执行代理
+	content, err := ProxyM3U(remote, header, proxyTs, tsProxyMode, clientHost)
+	if err != nil {
+		log.Printf(colors.ToRed("代理失败, 代理过程出错: %v"), err)
+		c.String(http.StatusInternalServerError, "代理异常")
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.apple.mpegurl")
+	c.Status(http.StatusOK)
+	_, _ = c.Writer.Write([]byte(content))
+	c.Writer.Flush()
+}
+
+// HandleProxyTs 代理 ts 切片
+func HandleProxyTs(c *gin.Context) {
 	// 校验客户端 ip 是否可受信任
 	clientIp := c.ClientIP()
 	if net.IsBlackIp(clientIp) {
