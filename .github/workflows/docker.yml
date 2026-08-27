@@ -1,9 +1,11 @@
 name: Build and Push Docker Images
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [published]
+
+permissions:
+  contents: write # 授予 GITHUB_TOKEN 写入发布资源的权限
 
 jobs:
   build:
