@@ -17,6 +17,7 @@ import (
 	"github.com/AmbitiousJun/live-server/internal/service/ytdlp"
 	"github.com/AmbitiousJun/live-server/internal/util/base64s"
 	"github.com/AmbitiousJun/live-server/internal/util/colors"
+	"golang.org/x/sync/errgroup"
 )
 
 // youtubeParams 频道请求参数
@@ -68,16 +69,29 @@ func init() {
 func (y *youtubeHandler) Handle(params resolve.HandleParams) (resolve.HandleResult, error) {
 	videoCode, audioCode := y.chooseFormat(params.Format)
 
-	videoPlaylist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: videoCode})
-	if err != nil {
-		go warp.ReportError(y.warpListenerId)
-		return resolve.HandleResult{}, fmt.Errorf("获取 video playlist 失败: %w", err)
-	}
+	var eg errgroup.Group
+	var err error
+	var videoPlaylist, audioPlaylist string
 
-	audioPlaylist, err := y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: audioCode})
-	if err != nil {
+	eg.Go(func() error {
+		videoPlaylist, err = y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: videoCode})
+		if err != nil {
+			return fmt.Errorf("获取 video playlist 失败: %w", err)
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
+		audioPlaylist, err = y.cacher.Request(youtubeParams{chId: params.ChName, formatCode: audioCode})
+		if err != nil {
+			return fmt.Errorf("获取 audio playlist 失败: %w", err)
+		}
+		return nil
+	})
+
+	if err = eg.Wait(); err != nil {
 		go warp.ReportError(y.warpListenerId)
-		return resolve.HandleResult{}, fmt.Errorf("获取 audio playlist 失败: %w", err)
+		return resolve.HandleResult{}, nil
 	}
 
 	// 不支持重定向, 必须启用 proxy_m3u 参数
