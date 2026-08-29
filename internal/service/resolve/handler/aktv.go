@@ -117,7 +117,7 @@ func (h *aktvHandler) SupportCustomHeaders() bool {
 
 // Enabled 标记处理器是否是启用状态
 func (h *aktvHandler) Enabled() bool {
-	return true
+	return false
 }
 
 // contentValid 检查频道是否有效

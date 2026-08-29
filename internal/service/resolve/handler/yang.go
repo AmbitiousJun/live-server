@@ -110,5 +110,5 @@ func (y *yangHandler) SupportCustomHeaders() bool {
 
 // Enabled 标记处理器是否是启用状态
 func (y *yangHandler) Enabled() bool {
-	return true
+	return false
 }
