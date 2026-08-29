@@ -118,10 +118,14 @@ func HandleProxyM3U8(c *gin.Context) {
 		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
 		return
 	}
-	ipInfo, ok := net.GetIpAddrInfo(clientIp)
-	if !ok || !whitearea.Passable(ipInfo) {
-		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
-		return
+
+	// 解析 IP 属地信息
+	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
+		c.Set(constant.Gin_IpAddrInfoKey, ipInfo)
+		if ipInfo != net.PrivateIpInfoName && !whitearea.Passable(ipInfo) {
+			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
+			return
+		}
 	}
 
 	// 解码远程 url 地址
@@ -189,10 +193,14 @@ func HandleProxyTs(c *gin.Context) {
 		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
 		return
 	}
-	ipInfo, ok := net.GetIpAddrInfo(clientIp)
-	if !ok || !whitearea.Passable(ipInfo) {
-		c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
-		return
+
+	// 解析 IP 属地信息
+	if ipInfo, ok := net.GetIpAddrInfo(clientIp); ok {
+		c.Set(constant.Gin_IpAddrInfoKey, ipInfo)
+		if ipInfo != net.PrivateIpInfoName && !whitearea.Passable(ipInfo) {
+			c.String(http.StatusNotFound, "私人服务器, 不对外公开, 望谅解！可前往官方仓库自行部署: "+constant.RepoAddr)
+			return
+		}
 	}
 
 	// 解码远程 url 地址
