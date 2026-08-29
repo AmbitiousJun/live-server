@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"strings"
 	"sync"
@@ -48,6 +49,7 @@ func init() {
 	resolve.RegisterHandler(y)
 	go func() {
 		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		for range ticker.C {
 			if len(y.caches) == 0 {
 				continue
@@ -91,7 +93,8 @@ func (h *combineHandler) Handle(params resolve.HandleParams) (resolve.HandleResu
 	}
 
 	// 4 随机选择一个直播源
-	randIdx := rand.IntN(len(chs))
+	randIdx64 := rand.Int64N(math.MaxInt64)
+	randIdx := int(randIdx64 % int64(len(chs)))
 	h.putCacheIdx(params.UrlEnv, randIdx)
 	return resolve.HandleResult{
 		Type: resolve.ResultRedirect,
