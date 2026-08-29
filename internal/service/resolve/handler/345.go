@@ -251,7 +251,7 @@ func (ih *iptv345Handler) SupportCustomHeaders() bool {
 
 // Enabled 标记处理器是否是启用状态
 func (ih *iptv345Handler) Enabled() bool {
-	return true
+	return false
 }
 
 func (ih *iptv345Handler) initCacher() {
