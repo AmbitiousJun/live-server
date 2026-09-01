@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand/v2"
 	"net"
 	"net/http"
 	"os"
@@ -192,22 +193,19 @@ func (m *manager) doFix(execPath string) {
 		log.Printf(colors.ToYellow("warp ip 不可用, 开始进行自动修复, err: %v"), err)
 
 		// 2 随机判断是否获取 needV6 地址
-		// needV6 := rand.Float64() >= 0.5
+		needV6 := rand.Float64() >= 0.5
 
 		// 3 执行脚本, 刷新 ip
-		if err := m.wgcfRefreshIPV2(execPath); err != nil {
+		if err := m.wgcfRefreshIP(execPath, needV6); err != nil {
 			log.Printf(colors.ToRed("warp ip 刷新失败: %v"), err)
 			continue
 		}
 
 		// 4 输出 v4 v6 信息
 		time.Sleep(time.Second * 10)
-		err = m.printCurIP(true)
+		err = m.printCurIP(needV6)
 		if err != nil {
-			err = m.printCurIP(false)
-			if err != nil {
-				log.Printf(colors.ToRed("获取最新 ip 异常: %v"), err)
-			}
+			log.Printf(colors.ToRed("获取最新 ip 异常: %v"), err)
 		}
 	}
 	log.Println(colors.ToPurple("warp ip 刷新重试次数已达上限"))
