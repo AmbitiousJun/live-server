@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand/v2"
 	"net"
 	"net/http"
 	"os"
@@ -81,6 +80,19 @@ func (m *manager) checkIP() error {
 	return g.Wait()
 }
 
+// wgcfRefreshIPV2 调用 wgcf 脚本刷新 ip,
+// 不自动切换 v4/v6, 而是保留原本的模式直接刷新 ip
+func (m *manager) wgcfRefreshIPV2(execPath string) error {
+	cmd := exec.Command("bash", execPath, "n")
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("调用脚本失败: %w", err)
+	}
+	return nil
+}
+
 // wgcfRefreshIP 调用 wgcf 脚本 刷新 ip
 func (m *manager) wgcfRefreshIP(execPath string, needV6 bool) error {
 	option := "4"
@@ -130,7 +142,7 @@ func (m *manager) ygkkkRefreshIP(execPath string, needV6 bool) error {
 }
 
 // printCurIP 输出当前的 ip 信息
-func (m *manager) printCurIP(needV6 bool) {
+func (m *manager) printCurIP(needV6 bool) error {
 	var v4, v6 string
 	g := errgroup.Group{}
 
@@ -161,9 +173,10 @@ func (m *manager) printCurIP(needV6 bool) {
 		g.Go(inner("https://v6.ipinfo.io/ip", "v6", &v6))
 	}
 	if err := g.Wait(); err != nil {
-		log.Printf(colors.ToYellow("获取最新 ip 异常: %v"), err)
+		return err
 	}
 	log.Printf(colors.ToGreen("最新 ip 信息 => v4: [%s], v6: [%s]"), v4, v6)
+	return nil
 }
 
 // doFix 无限重试, 刷新 ip, 直至所有监听器的检验通过
@@ -179,17 +192,23 @@ func (m *manager) doFix(execPath string) {
 		log.Printf(colors.ToYellow("warp ip 不可用, 开始进行自动修复, err: %v"), err)
 
 		// 2 随机判断是否获取 needV6 地址
-		needV6 := rand.Float64() >= 0.5
+		// needV6 := rand.Float64() >= 0.5
 
 		// 3 执行脚本, 刷新 ip
-		if err := m.wgcfRefreshIP(execPath, needV6); err != nil {
+		if err := m.wgcfRefreshIPV2(execPath); err != nil {
 			log.Printf(colors.ToRed("warp ip 刷新失败: %v"), err)
 			continue
 		}
 
 		// 4 输出 v4 v6 信息
 		time.Sleep(time.Second * 10)
-		m.printCurIP(needV6)
+		err = m.printCurIP(true)
+		if err != nil {
+			err = m.printCurIP(false)
+			if err != nil {
+				log.Printf(colors.ToRed("获取最新 ip 异常: %v"), err)
+			}
+		}
 	}
 	log.Println(colors.ToPurple("warp ip 刷新重试次数已达上限"))
 }
