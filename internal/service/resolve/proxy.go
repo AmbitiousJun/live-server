@@ -40,6 +40,72 @@ func RemoveM3UProxyCache(url string) {
 	cacheableProxyClient.RemoveUrlCache(url)
 }
 
+// ProxyM3UV2 代理 m3u 地址
+//
+// 代理成功时会返回代理后的 m3u 文本
+func ProxyM3UV2(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsProxyMode, clientHost string) (string, error) {
+	// 设置默认的客户端标识
+	if header == nil {
+		header = make(http.Header)
+	}
+	if header.Get("User-Agent") == "" {
+		header.Set("User-Agent", DefaultProxyUA)
+	}
+
+	// 推送并获取缓存
+	pushParams := m3u8.ProxyParams{
+		Url:    m3uLink,
+		Header: header,
+	}
+	if err := m3u8.PushCacheTask(pushParams); err != nil {
+		return "", fmt.Errorf("推送 m3u 刷新任务失败: %w", err)
+	}
+	finalLink, m3uContent, err := m3u8.ReadCacheContent(pushParams)
+	if err != nil {
+		return "", fmt.Errorf("读取 m3u 缓存失败: %w", err)
+	}
+
+	// 解析 m3u
+	m3uInfo, err := m3u8.ReadContent(m3u8.ExtractUrl(finalLink), m3uContent)
+	if err != nil {
+		return "", fmt.Errorf("解析 m3u 失败: %s, err: %v", m3uLink, err)
+	}
+
+	// 不代理切片, 直接返回原始文本
+	if !proxyTs {
+		return m3uInfo.Content(), nil
+	}
+
+	basePath := clientHost + "/proxy.ts"
+	if customHost, ok := getCustomTsProxyHost(tsProxyMode); ok {
+		basePath = customHost
+	}
+
+	var headerStr string
+	if header != nil {
+		kvs := []string{}
+		for k, vs := range header {
+			kvs = append(kvs, k, strings.Join(vs, ", "))
+		}
+		headerStr = base64.StdEncoding.EncodeToString([]byte(strings.Join(kvs, constant.HeadersSeg)))
+	}
+
+	tsLink, _ := url.Parse(basePath)
+
+	// 将 ts 切片地址更改为本地代理地址
+	return m3uInfo.ContentFunc(func(tsIdx int, tsUrl string) string {
+		remoteStr := base64.StdEncoding.EncodeToString([]byte(tsUrl))
+		q := tsLink.Query()
+		q.Set("remote", remoteStr)
+		if headerStr != "" {
+			q.Set("headers", headerStr)
+		}
+
+		tsLink.RawQuery = q.Encode()
+		return tsLink.String()
+	}), nil
+}
+
 // ProxyM3U 代理 m3u 地址
 //
 // 代理成功时会返回代理后的 m3u 文本
@@ -172,7 +238,7 @@ func HandleProxyM3U8(c *gin.Context) {
 	}
 
 	// 执行代理
-	content, err := ProxyM3U(remote, header, proxyTs, tsProxyMode, clientHost)
+	content, err := ProxyM3UV2(remote, header, proxyTs, tsProxyMode, clientHost)
 	if err != nil {
 		log.Printf(colors.ToRed("代理失败, 代理过程出错: %v"), err)
 		c.String(http.StatusInternalServerError, "代理异常")
