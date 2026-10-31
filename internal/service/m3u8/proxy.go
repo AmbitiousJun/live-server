@@ -21,7 +21,7 @@ const (
 
 	// CacheNoReadExpiredDuration 超出这个时间没有客户端来读取时,
 	// 就将缓存从缓存池中移除, 并停止刷新缓存
-	CacheNoReadExpiredDuration = time.Minute * 10
+	CacheNoReadExpiredDuration = time.Second * 20
 
 	// CacheMaintainWorkerMaxCount 控制维护缓存的最大协程数量
 	CacheMaintainWorkerMaxCount = 3
