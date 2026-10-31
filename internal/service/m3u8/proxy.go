@@ -24,7 +24,7 @@ const (
 	CacheNoReadExpiredDuration = time.Minute * 10
 
 	// CacheMaintainWorkerMaxCount 控制维护缓存的最大协程数量
-	CacheMaintainWorkerMaxCount = 50
+	CacheMaintainWorkerMaxCount = 3
 )
 
 // ProxyParams 代理参数
@@ -51,6 +51,9 @@ type cacheHolder struct {
 
 	// ready 区分尚未获取内容与成功获取到空文本
 	ready bool
+
+	// cancel 停止刷新并取消正在进行的 HTTP 请求。
+	cancel context.CancelFunc
 }
 
 // proxyCacheMu 保护任务注册、缓存内容和读取时间, 避免读取与过期删除竞争。
@@ -96,7 +99,7 @@ func ReadCacheContent(params ProxyParams) (finalUrl, m3u8Content string, err err
 //
 // 每次 http 请求时, 超时时间为 30 秒, 超时就放弃请求并打印日志, 等待下一次计时器周期重新请求
 //
-// 需要确保总共正在维护的协程数不能超过 CacheMaintainWorkerMaxCount 个
+// 最多维护 CacheMaintainWorkerMaxCount 个任务, 满额时淘汰最久未读取的任务。
 func PushCacheTask(params ProxyParams) error {
 	u, err := url.Parse(params.Url)
 	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
@@ -116,20 +119,34 @@ func PushCacheTask(params ProxyParams) error {
 		return nil
 	}
 	if len(proxyCacheTasks) >= CacheMaintainWorkerMaxCount {
-		return fmt.Errorf("m3u8 缓存维护任务已达上限: %d", CacheMaintainWorkerMaxCount)
+		var oldestKey string
+		var oldest *cacheHolder
+		for key, task := range proxyCacheTasks {
+			if oldest == nil || task.lastReadTime.Before(oldest.lastReadTime) {
+				oldestKey, oldest = key, task
+			}
+		}
+		oldest.cancel()
+		delete(proxyCacheTasks, oldestKey)
 	}
-	holder := &cacheHolder{lastReadTime: time.Now()}
+	ctx, cancel := context.WithCancel(context.Background())
+	holder := &cacheHolder{lastReadTime: time.Now(), cancel: cancel}
 	proxyCacheTasks[key] = holder
-	go maintainCache(key, params, holder)
+	go maintainCache(ctx, key, params, holder)
 	return nil
 }
 
 // maintainCache 首次立即请求, 此后按秒刷新; 同一任务的请求不会重叠。
-func maintainCache(key string, params ProxyParams, holder *cacheHolder) {
+func maintainCache(ctx context.Context, key string, params ProxyParams, holder *cacheHolder) {
+	defer holder.cancel()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
 		proxyCacheMu.Lock()
+		if ctx.Err() != nil || proxyCacheTasks[key] != holder {
+			proxyCacheMu.Unlock()
+			return
+		}
 		if time.Since(holder.lastReadTime) >= CacheNoReadExpiredDuration {
 			// 在同一临界区删除缓存, 避免退出前又被客户端读取续期。
 			delete(proxyCacheTasks, key)
@@ -138,23 +155,34 @@ func maintainCache(key string, params ProxyParams, holder *cacheHolder) {
 		}
 		proxyCacheMu.Unlock()
 
-		finalUrl, content, err := fetchCacheContent(params)
+		finalUrl, content, err := fetchCacheContent(ctx, params)
+		if ctx.Err() != nil {
+			return
+		}
 		if err != nil {
 			log.Printf(colors.ToRed("刷新 m3u8 缓存失败, url: %s, err: %v"), params.Url, err)
 		} else {
 			proxyCacheMu.Lock()
+			if proxyCacheTasks[key] != holder {
+				proxyCacheMu.Unlock()
+				return
+			}
 			holder.content = content
 			holder.finalUrl = finalUrl
 			holder.ready = true
 			proxyCacheMu.Unlock()
 		}
-		<-ticker.C
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
 	}
 }
 
 // fetchCacheContent 超时包含重定向和响应体读取, 失败时不覆盖已有缓存。
-func fetchCacheContent(params ProxyParams) (finalUrl, content string, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func fetchCacheContent(parent context.Context, params ProxyParams) (finalUrl, content string, err error) {
+	ctx, cancel := context.WithTimeout(parent, 30*time.Second)
 	defer cancel()
 	finalUrl, resp, err := https.Get(params.Url).Header(params.Header).Context(ctx).DoRedirect()
 	if err != nil {
