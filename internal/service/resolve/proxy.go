@@ -127,7 +127,8 @@ func ProxyM3U(m3uLink string, header http.Header, proxyTs bool, tsProxyMode TsPr
 
 	// 非成功响应, 有可能是被拦截
 	if !https.IsSuccessCode(resp.StatusCode) {
-		return "", fmt.Errorf("请求远程地址失败: %s", resp.Status)
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return "", fmt.Errorf("请求远程地址失败: %s, body: [%s]", resp.Status, string(bodyBytes))
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -238,7 +239,7 @@ func HandleProxyM3U8(c *gin.Context) {
 	}
 
 	// 执行代理
-	content, err := ProxyM3UV2(remote, header, proxyTs, tsProxyMode, clientHost)
+	content, err := ProxyM3U(remote, header, proxyTs, tsProxyMode, clientHost)
 	if err != nil {
 		log.Printf(colors.ToRed("代理失败, 代理过程出错: %v"), err)
 		c.String(http.StatusInternalServerError, "代理异常")
