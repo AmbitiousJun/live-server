@@ -21,10 +21,10 @@ const (
 
 	// CacheNoReadExpiredDuration 超出这个时间没有客户端来读取时,
 	// 就将缓存从缓存池中移除, 并停止刷新缓存
-	CacheNoReadExpiredDuration = time.Second * 20
+	CacheNoReadExpiredDuration = time.Second * 10
 
 	// CacheMaintainWorkerMaxCount 控制维护缓存的最大协程数量
-	CacheMaintainWorkerMaxCount = 3
+	CacheMaintainWorkerMaxCount = 5
 )
 
 // ProxyParams 代理参数
@@ -190,7 +190,8 @@ func fetchCacheContent(parent context.Context, params ProxyParams) (finalUrl, co
 	}
 	defer resp.Body.Close()
 	if !https.IsSuccessCode(resp.StatusCode) {
-		return "", "", fmt.Errorf("远程响应状态异常: %s", resp.Status)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return "", "", fmt.Errorf("远程响应状态异常: %s, body: %s", resp.Status, string(body))
 	}
 	contentBytes, err := io.ReadAll(resp.Body)
 	if err != nil {

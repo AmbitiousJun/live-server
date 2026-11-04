@@ -239,7 +239,7 @@ func HandleProxyM3U8(c *gin.Context) {
 	}
 
 	// 执行代理
-	content, err := ProxyM3U(remote, header, proxyTs, tsProxyMode, clientHost)
+	content, err := ProxyM3UV2(remote, header, proxyTs, tsProxyMode, clientHost)
 	if err != nil {
 		log.Printf(colors.ToRed("代理失败, 代理过程出错: %v"), err)
 		c.String(http.StatusInternalServerError, "代理异常")

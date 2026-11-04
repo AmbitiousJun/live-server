@@ -89,7 +89,7 @@ func M3U8Result(url string, params HandleParams) (HandleResult, error) {
 		return HandleResult{Type: ResultRedirect, Url: url}, nil
 	}
 
-	content, err := ProxyM3U(url, params.Headers, params.ProxyTs, params.TsProxyMode, params.ClientHost)
+	content, err := ProxyM3UV2(url, params.Headers, params.ProxyTs, params.TsProxyMode, params.ClientHost)
 	if err != nil {
 		return HandleResult{}, fmt.Errorf("代理 m3u 失败: %v", err)
 	}
