@@ -139,7 +139,7 @@ func PushCacheTask(params ProxyParams) error {
 // maintainCache 首次立即请求, 此后按秒刷新; 同一任务的请求不会重叠。
 func maintainCache(ctx context.Context, key string, params ProxyParams, holder *cacheHolder) {
 	defer holder.cancel()
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Second * 2)
 	defer ticker.Stop()
 	for {
 		proxyCacheMu.Lock()
